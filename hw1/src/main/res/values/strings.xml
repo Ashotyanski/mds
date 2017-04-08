@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">hw1</string>
+    <string name="add_view">Add View</string>
+    <string name="remove_view">Remove view</string>
+</resources>
