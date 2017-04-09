@@ -3,15 +3,11 @@ package yandex.com.mds.hw1;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 
 public class MainActivity extends Activity {
 
     private static final String TAG = "ACTIVITY";
-    private static final String LAYOUT_TAG = "LAYOUT";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,18 +18,7 @@ public class MainActivity extends Activity {
         // Let's create a container for our custom MainViews and a pair of buttons to add and remove them.
         // Thus we can see Views lifecycle from their creation to removal.
 
-        LinearLayout layout = (LinearLayout) findViewById(R.id.view_container);
-        layout.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewAttachedToWindow(View v) {
-                Log.d(LAYOUT_TAG, "View attached");
-            }
-
-            @Override
-            public void onViewDetachedFromWindow(View v) {
-                Log.d(LAYOUT_TAG, "View detached");
-            }
-        });
+        MainViewGroup layout = (MainViewGroup) findViewById(R.id.view_container);
 
         Button add = (Button) findViewById(R.id.button);
         add.setOnClickListener(v -> layout.addView(new MainView(this, "Child view - " + (layout.getChildCount() + 1))));

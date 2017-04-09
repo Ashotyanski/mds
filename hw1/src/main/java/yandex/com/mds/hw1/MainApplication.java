@@ -1,6 +1,7 @@
 package yandex.com.mds.hw1;
 
 import android.app.Application;
+import android.content.res.Configuration;
 import android.util.Log;
 
 public class MainApplication extends Application {
@@ -15,7 +16,13 @@ public class MainApplication extends Application {
 
     @Override
     public void onTerminate() {
-        Log.d(TAG, "Terminated");
         super.onTerminate();
+        Log.d(TAG, "Terminated");
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "Config changed");
     }
 }
