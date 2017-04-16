@@ -2,6 +2,7 @@ package yandex.com.mds.hw2.views.colorView;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -10,7 +11,7 @@ import android.view.View;
  * Base view that draws a colored square
  */
 public class ColorView extends View {
-    private int color;
+    private int color = Color.WHITE;
 
     public ColorView(Context context) {
         super(context);

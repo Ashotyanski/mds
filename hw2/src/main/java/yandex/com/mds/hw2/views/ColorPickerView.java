@@ -18,17 +18,11 @@ public class ColorPickerView extends HorizontalScrollView {
     private OnPickListener onPickListener;// = (color) -> Toast.makeText(getContext(), String.valueOf(color), Toast.LENGTH_SHORT).show();
 
     public ColorPickerView(Context context) {
-        super(context);
-        init(context);
+        this(context, null);
     }
 
     public ColorPickerView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
-    }
-
-    public ColorPickerView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
         init(context);
     }
 
@@ -53,9 +47,9 @@ public class ColorPickerView extends HorizontalScrollView {
 
         for (int i = 0; i < 16; i++) {
             int currentHue = 360 / 16 / 2 + 360 / 16 * i;
-            EditableColorView colorView = new EditableColorView(getContext(),
-                    Color.HSVToColor(new float[]{currentHue, 1, 1}), onPickListener);
-
+            EditableColorView colorView = new EditableColorView(getContext());
+            colorView.setDefaultColor(Color.HSVToColor(new float[]{currentHue, 1, 1}));
+            colorView.setOnPickListener(onPickListener);
             colorView.setLayoutParams(params);
             linearLayout.addView(colorView);
         }

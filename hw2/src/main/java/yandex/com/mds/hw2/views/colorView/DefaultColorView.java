@@ -9,17 +9,10 @@ import android.util.AttributeSet;
  * A ColorView that has a default color
  */
 public class DefaultColorView extends ColorView {
-    // cannot be final because of the "constructors hell"
     private int defaultColor = Color.WHITE;
 
     public DefaultColorView(Context context) {
         super(context);
-    }
-
-    public DefaultColorView(Context context, int defaultColor) {
-        super(context);
-        this.defaultColor = defaultColor;
-        setColor(defaultColor);
     }
 
     public DefaultColorView(Context context, @Nullable AttributeSet attrs) {
@@ -32,6 +25,11 @@ public class DefaultColorView extends ColorView {
 
     public int getDefaultColor() {
         return defaultColor;
+    }
+
+    public void setDefaultColor(int defaultColor) {
+        this.defaultColor = defaultColor;
+        setColorToDefault();
     }
 
     public void setColorToDefault() {

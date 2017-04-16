@@ -3,22 +3,46 @@ package yandex.com.mds.hw2.views.colorView;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
-import yandex.com.mds.hw2.views.ColorPickerView;
 import yandex.com.mds.hw2.R;
+import yandex.com.mds.hw2.utils.VibrationUtils;
+import yandex.com.mds.hw2.views.ColorPickerView;
 
-import static android.content.Context.VIBRATOR_SERVICE;
-
+/**
+ * An editable ColorView
+ */
 public class EditableColorView extends DefaultColorView {
-    private GestureDetector detector;
-    private Rect rect = new Rect();
-    boolean isEditing = false;
+    private float size = getContext().getResources().getDimension(R.dimen.default_color_size);
+    private float lastX, lastY;
+    private Rect rect = new Rect(0, 0, (int) size, (int) size);
+    private boolean isEditing = false;
+
+    private ColorPickerView.OnPickListener onPickListener;
+    private GestureDetector detector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            setColorToDefault();
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            onPickListener.onPick(getColor());
+            return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            isEditing = true;
+            getParent().requestDisallowInterceptTouchEvent(true);
+            VibrationUtils.vibrate(VibrationUtils.VIBRATE_SHORT);
+            super.onLongPress(e);
+        }
+    });
 
     public EditableColorView(Context context) {
         super(context);
@@ -30,34 +54,6 @@ public class EditableColorView extends DefaultColorView {
 
     public EditableColorView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-    }
-
-    public EditableColorView(Context context, int defaultColor, final ColorPickerView.OnPickListener listener) {
-        super(context, defaultColor);
-        float size = getContext().getResources().getDimension(R.dimen.default_color_size);
-        rect = new Rect(0, 0, (int) size, (int) size);
-
-        detector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                setColorToDefault();
-                return true;
-            }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                listener.onPick(getColor());
-                return true;
-            }
-
-            @Override
-            public void onLongPress(MotionEvent e) {
-                isEditing = true;
-                getParent().requestDisallowInterceptTouchEvent(true);
-                vibrate(VIBRATE_SHORT);
-                super.onLongPress(e);
-            }
-        });
     }
 
     @Override
@@ -72,11 +68,9 @@ public class EditableColorView extends DefaultColorView {
             case MotionEvent.ACTION_MOVE:
                 if (isEditing) {
                     if (rect.contains((int) event.getX(), (int) event.getY())) {
-                        float deltaX = event.getX() - rect.width() / 2;
-                        float deltaY = event.getY();
-                        editColor(deltaX, deltaY);
+                        editColor(event.getX(), event.getY());
                     } else {
-                        vibrate(VIBRATE_LONG);
+                        VibrationUtils.vibrate(VibrationUtils.VIBRATE_LONG);
                     }
                 }
         }
@@ -91,25 +85,20 @@ public class EditableColorView extends DefaultColorView {
         float deltaHue = deltaX / 16;
         hsv[0] += deltaHue;
 
-        //edit value
-        float deltaValue = deltaY / rect.height();
-        hsv[2] -= deltaValue;
+        float deltaValue = (deltaY - rect.height() / 2) / (rect.height() / 2);
+        if (deltaValue < 0)
+            //edit saturation
+            hsv[1] += deltaValue;
+        else
+            //edit value
+            hsv[2] -= deltaValue;
 
         setColor(Color.HSVToColor(hsv));
         invalidate();
     }
 
-    private static final int TIMEOUT_VIBRATE = 1000;
-    private static final int VIBRATE_LONG = 50;
-    private static final int VIBRATE_SHORT = 10;
 
-    private long lastVibrate = 0;
-
-    private void vibrate(int duration) {
-        if (System.currentTimeMillis() - lastVibrate > TIMEOUT_VIBRATE) {
-            Log.i("VIBRATION", "Vibrated for " + duration);
-            ((Vibrator) getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(duration);
-            lastVibrate = System.currentTimeMillis();
-        }
+    public void setOnPickListener(ColorPickerView.OnPickListener onPickListener) {
+        this.onPickListener = onPickListener;
     }
 }

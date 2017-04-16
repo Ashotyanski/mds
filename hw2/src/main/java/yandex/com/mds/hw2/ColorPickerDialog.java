@@ -8,8 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import yandex.com.mds.hw2.views.colorView.ColorView;
 import yandex.com.mds.hw2.views.ColorPickerView;
+import yandex.com.mds.hw2.views.colorView.ColorView;
 
 /**
  * Dialog that shows a colorpicker
