@@ -2,6 +2,7 @@ package yandex.com.mds.hw2;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,6 +68,22 @@ public class ColorPickerDialog extends DialogFragment {
 
         getDialog().setTitle("Pick a color");
         return root;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(ID, currentId);
+        outState.putInt(COLOR, resultColor.getColor());
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            resultColor.setColor(savedInstanceState.getInt(COLOR));
+            currentId = savedInstanceState.getInt(ID);
+        }
     }
 
     @Override
