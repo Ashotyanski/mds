@@ -15,6 +15,7 @@ import android.widget.ListView;
 import yandex.com.mds.hw3.ColorDatabaseHelper;
 import yandex.com.mds.hw3.ColorListAdapter;
 import yandex.com.mds.hw3.R;
+import yandex.com.mds.hw3.models.Color;
 
 public class MainActivity extends AppCompatActivity {
     public static final int COLOR_REQUEST_CODE = 1;
@@ -39,15 +40,16 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                showColorActivity(position);
+                Color color = ((ColorListAdapter.ViewHolder) view.getTag()).getColor();
+                showColorActivity(color);
             }
         });
     }
 
-    private void showColorActivity(int position) {
+    private void showColorActivity(Color color) {
         Intent intent = new Intent(this, ColorActivity.class);
-        if (position >= 0)
-            intent.putExtra("id", position);
+        if (color != null)
+            intent.putExtra("color", color);
         startActivityForResult(intent, COLOR_REQUEST_CODE);
     }
 
@@ -72,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_add) {
-            showColorActivity(-1);
+            showColorActivity(null);
             return true;
         }
         return super.onOptionsItemSelected(item);

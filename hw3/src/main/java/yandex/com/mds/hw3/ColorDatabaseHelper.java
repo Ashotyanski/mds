@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.provider.BaseColumns;
 
+import java.util.HashMap;
+
 import static android.provider.BaseColumns._ID;
 import static yandex.com.mds.hw3.ColorDatabaseHelper.ColorEntry.COLOR;
 import static yandex.com.mds.hw3.ColorDatabaseHelper.ColorEntry.DESCRIPTION;
@@ -34,11 +36,20 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_QUERY);
-        for (int i = 0; i < 4; i++) {
+        HashMap<String, Integer> colors = new HashMap<>();
+        colors.put("Red", Color.RED);
+        colors.put("Yellow", Color.YELLOW);
+        colors.put("Blue", Color.BLUE);
+        colors.put("Green", Color.GREEN);
+        int i = 0;
+        for (String colorName : colors.keySet()) {
             ContentValues contentValues = new ContentValues();
             contentValues.put(_ID, i);
-            contentValues.put(COLOR, Color.LTGRAY);
+            contentValues.put(TITLE, colorName);
+            contentValues.put(DESCRIPTION, "This is for " + colorName.toLowerCase() + " color");
+            contentValues.put(COLOR, colors.get(colorName));
             db.insert(TABLE_NAME, null, contentValues);
+            i++;
         }
     }
 

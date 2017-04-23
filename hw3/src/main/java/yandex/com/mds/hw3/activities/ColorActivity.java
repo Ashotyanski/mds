@@ -1,6 +1,5 @@
 package yandex.com.mds.hw3.activities;
 
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -11,6 +10,7 @@ import yandex.com.mds.hw3.ColorDatabaseHelper;
 import yandex.com.mds.hw3.R;
 import yandex.com.mds.hw3.colorpicker.colorview.ColorView;
 import yandex.com.mds.hw3.fragments.ColorPickerDialog;
+import yandex.com.mds.hw3.models.Color;
 
 public class ColorActivity extends AppCompatActivity implements ColorPickerDialog.OnColorSavedListener {
     public static final String COLOR = "color";
@@ -22,7 +22,7 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     EditText descriptionView;
     ColorView colorView;
     Button saveButton;
-    int id = 0;
+    Color color;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +36,10 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (getIntent().getExtras() != null) {
-            id = getIntent().getExtras().getInt("id");
-            Cursor cursor = dbHelper.getColor(id);
-            cursor.moveToFirst();
-            fillForm(cursor.getString(1), cursor.getString(2), cursor.getInt(3));
+            color = getIntent().getExtras().getParcelable("color");
+            fillForm(color.getTitle(), color.getDescription(), color.getColor());
             getSupportActionBar().setTitle("Edit color");
         } else {
-            id = -1;
             getSupportActionBar().setTitle("Create color");
         }
 
@@ -57,8 +54,8 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (id >= 0)
-                    dbHelper.saveColor(id, titleView.getText().toString(),
+                if (color != null)
+                    dbHelper.saveColor(color.getId(), titleView.getText().toString(),
                             descriptionView.getText().toString(), colorView.getColor());
                 else
                     dbHelper.addColor(titleView.getText().toString(),

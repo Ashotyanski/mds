@@ -9,6 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import yandex.com.mds.hw3.colorpicker.colorview.ColorView;
+import yandex.com.mds.hw3.models.Color;
 
 import static yandex.com.mds.hw3.ColorDatabaseHelper.ColorEntry.COLOR;
 import static yandex.com.mds.hw3.ColorDatabaseHelper.ColorEntry.DESCRIPTION;
@@ -23,6 +24,8 @@ public class ColorListAdapter extends CursorAdapter {
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         View v = LayoutInflater.from(context).inflate(R.layout.list_item, parent, false);
         ViewHolder holder = new ViewHolder(v);
+        Color color = new Color(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3));
+        holder.setColor(color);
         v.setTag(holder);
         return v;
     }
@@ -41,9 +44,18 @@ public class ColorListAdapter extends CursorAdapter {
     }
 
     public class ViewHolder {
+        Color color;
         TextView titleView;
         TextView descriptionView;
         ColorView colorView;
+
+        public void setColor(Color color) {
+            this.color = color;
+        }
+
+        public Color getColor() {
+            return color;
+        }
 
         public ViewHolder(View view) {
             titleView = (TextView) view.findViewById(R.id.title);
