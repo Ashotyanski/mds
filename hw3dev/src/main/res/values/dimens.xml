@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="default_color_size">60dp</dimen>
+    <dimen name="result_color_size">100dp</dimen>
+</resources>
