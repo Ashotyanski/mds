@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">hw3</string>
+    <string name="action_add">Add</string>
+    <string name="save">Save</string>
+    <string name="description_hint">Description</string>
+    <string name="title_hint">Title</string>
+    <string name="pick">Pick</string>
+</resources>
