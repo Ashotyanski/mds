@@ -100,6 +100,13 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, contentValues);
     }
 
+    public void deleteColor(int colorId) {
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = _ID + " = ?";
+        String[] selectionArgs = {String.valueOf(colorId)};
+        db.delete(TABLE_NAME, whereClause, selectionArgs);
+    }
+
     public final class ColorEntry implements BaseColumns {
         public static final String TABLE_NAME = "colors";
         public static final String COLOR = "color";
