@@ -31,7 +31,8 @@ public class EditableColorView extends DefaultColorView {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            onPickListener.onPick(getColor());
+            if (onPickListener != null)
+                onPickListener.onPick(getColor());
             return true;
         }
 

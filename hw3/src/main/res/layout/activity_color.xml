@@ -28,7 +28,7 @@
         android:inputType="textPersonName"
         android:maxLength="50" />
 
-    <yandex.com.mds.hw3.colorpicker.colorview.ColorView
+    <yandex.com.mds.hw3.colorpicker.colorview.EditableColorView
         android:id="@+id/color"
         android:layout_width="100dp"
         android:layout_height="100dp"

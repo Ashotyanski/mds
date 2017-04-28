@@ -10,19 +10,21 @@ import android.widget.EditText;
 
 import yandex.com.mds.hw3.ColorDatabaseHelper;
 import yandex.com.mds.hw3.R;
-import yandex.com.mds.hw3.colorpicker.colorview.ColorView;
+import yandex.com.mds.hw3.colorpicker.ColorPickerView;
+import yandex.com.mds.hw3.colorpicker.colorview.EditableColorView;
 import yandex.com.mds.hw3.fragments.ColorPickerDialog;
 import yandex.com.mds.hw3.models.Color;
 
 public class ColorActivity extends AppCompatActivity implements ColorPickerDialog.OnColorSavedListener {
     public static final String COLOR = "color";
+    public static final String DEFAULT_COLOR = "default_color";
     public static final String DESCRIPTION = "description";
     public static final String TITLE = "title";
     ColorDatabaseHelper dbHelper = new ColorDatabaseHelper(this);
 
     EditText titleView;
     EditText descriptionView;
-    ColorView colorView;
+    EditableColorView colorView;
     Button saveButton;
     Color color;
 
@@ -32,23 +34,23 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
         setContentView(R.layout.activity_color);
         titleView = (EditText) findViewById(R.id.title);
         descriptionView = (EditText) findViewById(R.id.description);
-        colorView = (ColorView) findViewById(R.id.color);
+        colorView = (EditableColorView) findViewById(R.id.color);
         saveButton = (Button) findViewById(R.id.save_button);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (getIntent().getExtras() != null) {
             color = getIntent().getExtras().getParcelable("color");
-            fillForm(color.getTitle(), color.getDescription(), color.getColor());
+            fillForm(color.getTitle(), color.getDescription(), color.getColor(), color.getColor());
             getSupportActionBar().setTitle("Edit color");
         } else {
             getSupportActionBar().setTitle("Create color");
         }
 
-        colorView.setOnClickListener(new View.OnClickListener() {
+        colorView.setOnPickListener(new ColorPickerView.OnPickListener() {
             @Override
-            public void onClick(View v) {
-                ColorPickerDialog pickerDialog = ColorPickerDialog.newInstance(colorView.getColor());
+            public void onPick(int color) {
+                ColorPickerDialog pickerDialog = ColorPickerDialog.newInstance(color);
                 pickerDialog.show(getSupportFragmentManager(), "COLOR_PICKER");
             }
         });
@@ -98,7 +100,8 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
         fillForm(
                 savedInstanceState.getString(TITLE),
                 savedInstanceState.getString(DESCRIPTION),
-                savedInstanceState.getInt(COLOR));
+                savedInstanceState.getInt(COLOR),
+                savedInstanceState.getInt(DEFAULT_COLOR));
     }
 
     @Override
@@ -107,17 +110,19 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
         outState.putString(TITLE, titleView.getText().toString());
         outState.putString(DESCRIPTION, descriptionView.getText().toString());
         outState.putInt(COLOR, colorView.getColor());
-
+        outState.putInt(DEFAULT_COLOR, colorView.getDefaultColor());
     }
 
-    private void fillForm(String title, String description, int color) {
+    private void fillForm(String title, String description, int color, int defaultColor) {
         titleView.setText(title);
         descriptionView.setText(description);
         colorView.setColor(color);
+        colorView.setDefaultColor(color);
     }
 
     @Override
     public void onColorSave(int color) {
+        colorView.setDefaultColor(color);
         colorView.setColor(color);
     }
 }
