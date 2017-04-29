@@ -59,10 +59,13 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public Cursor getColors() {
+    public Cursor getColors(boolean sortAlphabetically) {
         SQLiteDatabase db = getReadableDatabase();
         String[] columns = {_ID, TITLE, DESCRIPTION, COLOR};
         String sortOrder = _ID + " ASC";
+        if (sortAlphabetically) {
+            sortOrder = TITLE + " ASC";
+        }
         return db.query(TABLE_NAME, columns, null, null, null, null, sortOrder);
     }
 

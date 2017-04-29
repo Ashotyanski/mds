@@ -6,4 +6,6 @@
     <string name="title_hint">Title</string>
     <string name="pick">Pick</string>
     <string name="action_delete">Delete</string>
+    <string name="sort_date">Sort by creation date</string>
+    <string name="sort_alphabetically">Sort alphabetically</string>
 </resources>

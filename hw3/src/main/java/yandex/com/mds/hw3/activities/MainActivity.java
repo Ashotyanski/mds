@@ -20,7 +20,13 @@ import yandex.com.mds.hw3.models.Color;
 public class MainActivity extends AppCompatActivity {
     public static final int COLOR_REQUEST_CODE = 1;
     private static final String CURRENT_POSITION = "currentPosition";
+    private static final String CURRENT_SORT = "currentSort";
 
+    private enum Sort {
+        DateOfCreation, Alphabetic
+    }
+
+    private Sort currentSort = Sort.DateOfCreation;
     ColorDatabaseHelper dbHelper = new ColorDatabaseHelper(this);
     private ListView listView;
 
@@ -31,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Cursor c = dbHelper.getColors();
+        Cursor c = dbHelper.getColors(false);
         CursorAdapter adapter = new ColorListAdapter(this, c);
 
         listView = (ListView) findViewById(R.id.list);
@@ -58,9 +64,8 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == COLOR_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                Cursor c = dbHelper.getColors();
-                ColorListAdapter adapter = new ColorListAdapter(this, c);
-                listView.setAdapter(adapter);
+                Cursor c = dbHelper.getColors(true);
+                ((ColorListAdapter) listView.getAdapter()).changeCursor(c);
             }
         }
     }
@@ -68,27 +73,62 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem item = menu.getItem(0);
+        if (currentSort == Sort.Alphabetic) {
+            item.setTitle(R.string.sort_date);
+            item.setIcon(R.drawable.ic_sort);
+        } else {
+            item.setTitle(R.string.sort_alphabetically);
+            item.setIcon(R.drawable.ic_sort_by_alpha);
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_add) {
-            showColorActivity(null);
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_add: {
+                showColorActivity(null);
+                return true;
+            }
+            case R.id.action_sort: {
+                currentSort = switchSort(currentSort);
+                Cursor c = dbHelper.getColors(currentSort == Sort.Alphabetic);
+                ((ColorListAdapter) listView.getAdapter()).changeCursor(c);
+                if (currentSort == Sort.Alphabetic) {
+                    item.setTitle(R.string.sort_date);
+                    item.setIcon(R.drawable.ic_sort);
+                } else {
+                    item.setTitle(R.string.sort_alphabetically);
+                    item.setIcon(R.drawable.ic_sort_by_alpha);
+                }
+                return true;
+            }
         }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private Sort switchSort(Sort currentSort) {
+        if (currentSort == Sort.Alphabetic)
+            return Sort.DateOfCreation;
+        return Sort.Alphabetic;
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         listView.smoothScrollToPosition(savedInstanceState.getInt(CURRENT_POSITION));
+
+        currentSort = Sort.valueOf(savedInstanceState.getString(CURRENT_SORT));
+        Cursor c = dbHelper.getColors(currentSort == Sort.Alphabetic);
+        ((ColorListAdapter) listView.getAdapter()).changeCursor(c);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(CURRENT_POSITION, listView.getFirstVisiblePosition());
+        outState.putString(CURRENT_SORT, currentSort.name());
     }
 }
