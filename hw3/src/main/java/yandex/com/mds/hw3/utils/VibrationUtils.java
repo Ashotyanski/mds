@@ -11,13 +11,13 @@ public class VibrationUtils {
     public static final int VIBRATE_LONG = 50;
     public static final int VIBRATE_SHORT = 10;
 
-    private static long lastVibrate = 0;
+    private static long lastVibrateMillis = 0;
 
     public static void vibrate(int duration) {
-        if (System.currentTimeMillis() - lastVibrate > TIMEOUT_VIBRATE) {
+        if (System.currentTimeMillis() - lastVibrateMillis > TIMEOUT_VIBRATE) {
             Log.i("VIBRATION", "Vibrated for " + duration);
             ((Vibrator) getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(duration);
-            lastVibrate = System.currentTimeMillis();
+            lastVibrateMillis = System.currentTimeMillis();
         }
     }
 }

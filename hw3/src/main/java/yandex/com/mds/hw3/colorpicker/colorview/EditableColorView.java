@@ -8,7 +8,6 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
-import yandex.com.mds.hw3.R;
 import yandex.com.mds.hw3.colorpicker.ColorPickerView;
 import yandex.com.mds.hw3.utils.VibrationUtils;
 
@@ -16,9 +15,7 @@ import yandex.com.mds.hw3.utils.VibrationUtils;
  * An editable ColorView
  */
 public class EditableColorView extends DefaultColorView {
-    private float size = getContext().getResources().getDimension(R.dimen.default_color_size);
-    private float lastX, lastY;
-    private Rect rect = new Rect(0, 0, (int) size, (int) size);
+    private Rect boundingRect = new Rect();
     private boolean isEditing = false;
 
     private ColorPickerView.OnPickListener onPickListener;
@@ -58,6 +55,12 @@ public class EditableColorView extends DefaultColorView {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        boundingRect.set(0, 0, getWidth(), getHeight());
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
 
@@ -68,7 +71,7 @@ public class EditableColorView extends DefaultColorView {
                 return false;
             case MotionEvent.ACTION_MOVE:
                 if (isEditing) {
-                    if (rect.contains((int) event.getX(), (int) event.getY())) {
+                    if (boundingRect.contains((int) event.getX(), (int) event.getY())) {
                         editColor(event.getX(), event.getY());
                     } else {
                         VibrationUtils.vibrate(VibrationUtils.VIBRATE_LONG);
@@ -86,7 +89,7 @@ public class EditableColorView extends DefaultColorView {
         float deltaHue = deltaX / 16;
         hsv[0] += deltaHue;
 
-        float deltaValue = (deltaY - rect.height() / 2) / (rect.height() / 2);
+        float deltaValue = (deltaY - boundingRect.height() / 2) / (boundingRect.height() / 2);
         if (deltaValue < 0)
             //edit saturation
             hsv[1] += deltaValue;

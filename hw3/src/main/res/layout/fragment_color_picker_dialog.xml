@@ -15,7 +15,7 @@
         android:id="@+id/color_view"
         android:layout_width="@dimen/result_color_size"
         android:layout_height="@dimen/result_color_size"
-        android:layout_margin="10dp" />
+        android:layout_margin="@dimen/colorpicker_dialog_color_view_margin" />
 
     <Button
         android:id="@+id/pick_button"
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/colorpicker_dialog_pick_button_margin"
         android:text="@string/pick" />
 
 
