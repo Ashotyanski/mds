@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">hw</string>
+    <string name="action_add">Add</string>
+    <string name="save">Save</string>
+    <string name="description_hint">Description</string>
+    <string name="title_hint">Title</string>
+    <string name="pick">Pick</string>
+    <string name="action_delete">Delete</string>
+    <string name="sort_date">Sort by creation date</string>
+    <string name="sort_alphabetically">Sort alphabetically</string>
+    <string name="title_color_edit">Edit color</string>
+    <string name="title_color_create">Create color</string>
+</resources>

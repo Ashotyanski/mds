@@ -1,0 +1,30 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context="yandex.com.mds.hw.fragments.ColorPickerDialog">
+
+    <yandex.com.mds.hw.colorpicker.ColorPickerView
+        android:id="@+id/color_picker_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <yandex.com.mds.hw.colorpicker.colorview.ColorView
+        android:id="@+id/color_view"
+        android:layout_width="@dimen/result_color_size"
+        android:layout_height="@dimen/result_color_size"
+        android:layout_margin="@dimen/colorpicker_dialog_color_view_margin" />
+
+    <Button
+        android:id="@+id/pick_button"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="@dimen/colorpicker_dialog_pick_button_margin"
+        android:text="@string/pick" />
+
+
+</LinearLayout>
