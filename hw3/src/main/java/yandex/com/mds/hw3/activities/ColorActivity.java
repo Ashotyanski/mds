@@ -1,6 +1,9 @@
 package yandex.com.mds.hw3.activities;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +31,13 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     Button saveButton;
     Color color;
 
+    public static Intent getInstance(Context c, @Nullable Color color) {
+        Intent intent = new Intent(c, ColorActivity.class);
+        if (color != null)
+            intent.putExtra("color", color);
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +49,8 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (getIntent().getExtras() != null) {
-            color = getIntent().getExtras().getParcelable("color");
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && (color = extras.getParcelable("color")) != null) {
             fillForm(color.getTitle(), color.getDescription(), color.getColor(), color.getColor());
             getSupportActionBar().setTitle("Edit color");
         } else {
@@ -64,7 +74,6 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
                 else
                     dbHelper.addColor(titleView.getText().toString(),
                             descriptionView.getText().toString(), colorView.getColor());
-
                 setResult(RESULT_OK);
                 finish();
             }
@@ -80,7 +89,8 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_delete) {
-            dbHelper.deleteColor(color.getId());
+            if (color != null)
+                dbHelper.deleteColor(color.getId());
             setResult(RESULT_OK);
             finish();
             return true;
@@ -116,8 +126,8 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     private void fillForm(String title, String description, int color, int defaultColor) {
         titleView.setText(title);
         descriptionView.setText(description);
+        colorView.setDefaultColor(defaultColor);
         colorView.setColor(color);
-        colorView.setDefaultColor(color);
     }
 
     @Override

@@ -53,10 +53,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showColorActivity(Color color) {
-        Intent intent = new Intent(this, ColorActivity.class);
-        if (color != null)
-            intent.putExtra("color", color);
-        startActivityForResult(intent, COLOR_REQUEST_CODE);
+        startActivityForResult(ColorActivity.getInstance(this, color), COLOR_REQUEST_CODE);
     }
 
     @Override
@@ -74,13 +71,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem item = menu.getItem(0);
-        if (currentSort == Sort.Alphabetic) {
-            item.setTitle(R.string.sort_date);
-            item.setIcon(R.drawable.ic_sort);
-        } else {
-            item.setTitle(R.string.sort_alphabetically);
-            item.setIcon(R.drawable.ic_sort_by_alpha);
-        }
+        initSortButton(item, currentSort);
         return true;
     }
 
@@ -95,13 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 currentSort = switchSort(currentSort);
                 Cursor c = dbHelper.getColors(currentSort == Sort.Alphabetic);
                 ((ColorListAdapter) listView.getAdapter()).changeCursor(c);
-                if (currentSort == Sort.Alphabetic) {
-                    item.setTitle(R.string.sort_date);
-                    item.setIcon(R.drawable.ic_sort);
-                } else {
-                    item.setTitle(R.string.sort_alphabetically);
-                    item.setIcon(R.drawable.ic_sort_by_alpha);
-                }
+                initSortButton(item, currentSort);
                 return true;
             }
         }
@@ -113,6 +98,11 @@ public class MainActivity extends AppCompatActivity {
         if (currentSort == Sort.Alphabetic)
             return Sort.DateOfCreation;
         return Sort.Alphabetic;
+    }
+
+    private void initSortButton(MenuItem item, Sort currentSort) {
+        item.setTitle(currentSort == Sort.Alphabetic ? R.string.sort_date : R.string.sort_alphabetically);
+        item.setIcon(currentSort == Sort.Alphabetic ? R.drawable.ic_sort : R.drawable.ic_sort_by_alpha);
     }
 
     @Override
