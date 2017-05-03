@@ -1,1 +1,1 @@
-include ':app', ':hw1'
+include ':hw', ':sample'

@@ -1,4 +1,4 @@
-package yandex.com.mds.hw;
+package yandex.com.mds.hw.colors;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 import yandex.com.mds.hw.db.ColorDatabaseHelper;
 

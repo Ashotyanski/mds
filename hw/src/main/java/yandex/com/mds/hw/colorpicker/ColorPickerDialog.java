@@ -17,7 +17,6 @@ import yandex.com.mds.hw.R;
  */
 public class ColorPickerDialog extends DialogFragment {
     private static final String COLOR = "COLOR";
-    private static final String ID = "ID";
 
     private ColorPickerView colorPickerView;
     private ColorView resultColor;
@@ -102,8 +101,8 @@ public class ColorPickerDialog extends DialogFragment {
     public interface OnColorSavedListener {
         /**
          * Called when the color has been saved.
-         *  @param color  saved color.
          *
+         * @param color saved color.
          */
         void onColorSave(int color);
     }

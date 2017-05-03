@@ -17,7 +17,6 @@ import android.widget.ListView;
 
 import java.text.ParseException;
 
-import yandex.com.mds.hw.ColorListAdapter;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.color_edit.ColorEditActivity;
 import yandex.com.mds.hw.colors.query.Query;
