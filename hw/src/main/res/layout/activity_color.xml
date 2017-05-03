@@ -14,7 +14,7 @@
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/color"
         android:ems="10"
-        android:hint="@string/title_hint"
+        android:hint="@string/hint_title"
         android:inputType="textPersonName"
         android:maxLength="50" />
 
@@ -26,7 +26,7 @@
         android:layout_below="@+id/title"
         android:layout_toStartOf="@+id/color"
         android:ems="10"
-        android:hint="@string/description_hint"
+        android:hint="@string/hint_description"
         android:inputType="textPersonName"
         android:maxLength="50" />
 

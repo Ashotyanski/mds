@@ -54,11 +54,41 @@ public class QueryPresenter {
         this.onApplyListener = onApplyListener;
         root.bringToFront();
         init();
-        initAnimators();
         sortPresenter = new SortPresenter(context, (LinearLayout) root.findViewById(R.id.sort_root));
         datesFilterPresenter = new DatesFilterPresenter(context, (RelativeLayout) root.findViewById(R.id.filter_date_root));
         searchPresenter = new SearchPresenter(context, (LinearLayout) root.findViewById(R.id.search_root));
         initQueryTemplates();
+        initAnimators();
+    }
+
+    private void init() {
+        root.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                root.requestFocus();
+            }
+        });
+        Button applyButton = (Button) root.findViewById(R.id.button_apply);
+        applyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Query query = getQuery();
+                    onApplyListener.onApply(query);
+                    closeQuery();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        Button cancelButton = (Button) root.findViewById(R.id.button_cancel);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeQuery();
+            }
+        });
     }
 
     private void initQueryTemplates() {
@@ -84,13 +114,13 @@ public class QueryPresenter {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Query template title");
+                builder.setTitle(R.string.title_dialog_query_save);
 
                 final EditText input = new EditText(context);
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 builder.setView(input);
 
-                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String title = input.getText().toString();
@@ -98,7 +128,7 @@ public class QueryPresenter {
                             saveQuery(title);
                             fillQueriesTemplatesAdapter(getQueriesTitles());
                         } catch (IOException e) {
-                            Toast.makeText(context, "Could not save query template in " + title, Toast.LENGTH_SHORT)
+                            Toast.makeText(context, context.getString(R.string.error_query_save) + title, Toast.LENGTH_SHORT)
                                     .show();
                             e.printStackTrace();
                         } catch (ParseException e) {
@@ -106,44 +136,13 @@ public class QueryPresenter {
                         }
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
                     }
                 });
                 builder.show();
-            }
-        });
-    }
-
-    private void init() {
-        root.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Toast.makeText(v.getContext(), "Button", Toast.LENGTH_SHORT).show();
-                root.requestFocus();
-            }
-        });
-        Button applyButton = (Button) root.findViewById(R.id.button_apply);
-        applyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    Query query = getQuery();
-                    onApplyListener.onApply(query);
-                    closeQuery();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        Button cancelButton = (Button) root.findViewById(R.id.button_cancel);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeQuery();
             }
         });
     }

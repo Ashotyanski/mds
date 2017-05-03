@@ -6,6 +6,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -14,6 +15,8 @@ import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.db.ColorImporterExporter;
 
 public class ColorImportExportActivity extends AppCompatActivity {
+    private static final String TAG = ColorImportExportActivity.class.getName();
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,10 +42,12 @@ public class ColorImportExportActivity extends AppCompatActivity {
                     String file = getImportExportFilename();
                     try {
                         exporter.importColors(file);
-                        Toast.makeText(getActivity(), "Colors imported from " + file, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Colors imported from " + file);
+                        Toast.makeText(getActivity(), R.string.success_color_import, Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
+                        Log.d(TAG, "Could not import colors from " + file);
                         e.printStackTrace();
-                        Toast.makeText(getActivity(), "Could not export colors from " + file, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), R.string.error_color_import, Toast.LENGTH_SHORT).show();
                     }
                     return true;
                 }
@@ -54,10 +59,12 @@ public class ColorImportExportActivity extends AppCompatActivity {
                     String file = getImportExportFilename();
                     try {
                         exporter.exportColors(file);
-                        Toast.makeText(getActivity(), "Colors exported into " + file, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Colors exported to " + file);
+                        Toast.makeText(getActivity(), R.string.success_color_export, Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        Toast.makeText(getActivity(), "Could not export colors into " + file, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Could not export colors to " + file);
+                        Toast.makeText(getActivity(), R.string.error_colors_export, Toast.LENGTH_SHORT).show();
                     }
                     return true;
                 }

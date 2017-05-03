@@ -14,7 +14,7 @@ import yandex.com.mds.hw.utils.GradientUtils;
 
 public class ColorPickerView extends HorizontalScrollView {
     private LinearLayout linearLayout;
-    private OnPickListener onPickListener;// = (color) -> Toast.makeText(getContext(), String.valueOf(color), Toast.LENGTH_SHORT).show();
+    private OnPickListener onPickListener;
 
     public ColorPickerView(Context context) {
         this(context, null);

@@ -29,7 +29,8 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
     public static final String DESCRIPTION = "description";
     public static final String TITLE = "title";
     public static final String IS_VIEW_COUNTED = "isViewCounted";
-    ColorDao colorDao = new ColorDaoImpl();
+
+    private ColorDao colorDao = new ColorDaoImpl();
 
     EditText titleView;
     EditText descriptionView;
@@ -60,7 +61,7 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         if (extras != null && extras.getInt(ID, -1) >= 0) {
             colorRecord = colorDao.getColor(extras.getInt(ID));
             fillForm(colorRecord.getTitle(), colorRecord.getDescription(), colorRecord.getColor(), colorRecord.getColor());
-            getSupportActionBar().setTitle(R.string.title_color_edit);
+            getSupportActionBar().setTitle(R.string.title_activity_color_edit);
             Log.d("ColorEditActivity", String.format("Created at %s, last edit at %s, last seen at %s,change to %s",
                     TimeUtils.formatDateTime(colorRecord.getCreationDate()),
                     TimeUtils.formatDateTime(colorRecord.getLastModificationDate()),
@@ -73,7 +74,7 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
                 isViewCounted = true;
             }
         } else {
-            getSupportActionBar().setTitle(R.string.title_color_create);
+            getSupportActionBar().setTitle(R.string.title_activity_color_create);
         }
 
         colorView.setOnPickListener(new ColorPickerView.OnPickListener() {

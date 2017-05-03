@@ -121,4 +121,17 @@ public class ColorRecord implements Parcelable {
             return new ColorRecord[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "ColorRecord{" +
+                "id=" + id +
+                ", color=" + color +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", creationDate=" + creationDate +
+                ", lastModificationDate=" + lastModificationDate +
+                ", lastViewDate=" + lastViewDate +
+                '}';
+    }
 }

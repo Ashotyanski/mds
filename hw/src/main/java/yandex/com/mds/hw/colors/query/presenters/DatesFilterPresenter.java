@@ -107,7 +107,6 @@ public class DatesFilterPresenter {
 
             }
         });
-
     }
 
     private void toggleDateFilter(boolean isEnabled) {
@@ -163,7 +162,7 @@ public class DatesFilterPresenter {
                 filter.setDate(TimeUtils.dateFormat.parse(dateFrom.getText().toString()));
                 dateFrom.setError(null);
             } catch (ParseException e) {
-                dateFrom.setError("Incorrect date");
+                dateFrom.setError(context.getString(R.string.error_date_incorrect));
                 e.printStackTrace();
                 throw e;
             }
@@ -179,7 +178,7 @@ public class DatesFilterPresenter {
                 filter.setFrom(TimeUtils.dateFormat.parse(dateFrom.getText().toString()));
             } catch (ParseException e) {
                 dateFrom.setError(null);
-                dateFrom.setError("Incorrect date");
+                dateFrom.setError(context.getString(R.string.error_date_incorrect));
                 e.printStackTrace();
                 throw e;
             }
@@ -187,7 +186,7 @@ public class DatesFilterPresenter {
                 filter.setTo(TimeUtils.dateFormat.parse(dateTo.getText().toString()));
             } catch (ParseException e) {
                 dateTo.setError(null);
-                dateTo.setError("Incorrect date");
+                dateTo.setError(context.getString(R.string.error_date_incorrect));
                 e.printStackTrace();
                 throw e;
             }

@@ -61,7 +61,7 @@ public class ColorPickerDialog extends DialogFragment {
             }
         });
 
-        getDialog().setTitle("Pick a color");
+        getDialog().setTitle(R.string.title_dialog_pick_color);
         return root;
     }
 
