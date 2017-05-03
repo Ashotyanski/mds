@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.fragments;
+package yandex.com.mds.hw.colorpicker;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,7 +11,6 @@ import android.widget.Button;
 
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 import yandex.com.mds.hw.R;
-import yandex.com.mds.hw.colorpicker.ColorPickerView;
 
 /**
  * Dialog that shows a colorpicker

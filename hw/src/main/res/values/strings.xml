@@ -1,13 +1,28 @@
 <resources>
     <string name="app_name">hw</string>
-    <string name="action_add">Add</string>
     <string name="save">Save</string>
     <string name="description_hint">Description</string>
     <string name="title_hint">Title</string>
     <string name="pick">Pick</string>
+    <string name="action_import_export">Import/Export colors</string>
     <string name="action_delete">Delete</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_filter">Filter</string>
     <string name="sort_date">Sort by creation date</string>
     <string name="sort_alphabetically">Sort alphabetically</string>
     <string name="title_color_edit">Edit color</string>
     <string name="title_color_create">Create color</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="title_activity_color_import_export">Import/Export colors</string>
+    <string name="pref_title_import_export_file">Import/Export file</string>
+    <string name="pref_default_import_export_file">colors.json</string>
+    <string name="query_sort">Sort</string>
+    <string name="query_filter_by_date">Filter by date</string>
+    <string name="query_filter_by_color">Filter by color</string>
+    <string name="cancel">Cancel</string>
+    <string name="apply">Apply</string>
+    <string name="search">Search</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
 </resources>

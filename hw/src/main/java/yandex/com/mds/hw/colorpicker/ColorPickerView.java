@@ -48,6 +48,7 @@ public class ColorPickerView extends HorizontalScrollView {
             int currentHue = 360 / 16 / 2 + 360 / 16 * i;
             EditableColorView colorView = new EditableColorView(getContext());
             colorView.setDefaultColor(Color.HSVToColor(new float[]{currentHue, 1, 1}));
+            colorView.setColorToDefault();
             colorView.setOnPickListener(onPickListener);
             colorView.setLayoutParams(params);
             linearLayout.addView(colorView);

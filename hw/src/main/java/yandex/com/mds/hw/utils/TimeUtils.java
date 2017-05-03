@@ -14,11 +14,21 @@ public class TimeUtils {
         return new Date().getTime();
     }
 
-    public static String toDateTime(long timestamp) {
+    public static String formatDateTime(long timestamp) {
+        return formatDateTime(new Date(timestamp));
+    }
+
+    public static String formatDateTime(Date date) {
+        return formatDateTime(date, TimeZone.getTimeZone("UTC"));
+    }
+
+    public static String formatDateTime(Date date, TimeZone timeZone) {
+        if (date == null)
+            return "";
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date(timestamp));
-        calendar.setTimeZone(TimeZone.getDefault());
-        Date date = calendar.getTime();
-        return dateFormat.format(date);
+        calendar.setTime(date);
+        calendar.setTimeZone(timeZone);
+        dateFormat.setTimeZone(timeZone);
+        return dateFormat.format(calendar.getTime());
     }
 }

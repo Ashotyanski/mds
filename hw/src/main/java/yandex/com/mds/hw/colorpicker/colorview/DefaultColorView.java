@@ -29,7 +29,6 @@ public class DefaultColorView extends ColorView {
 
     public void setDefaultColor(int defaultColor) {
         this.defaultColor = defaultColor;
-        setColorToDefault();
     }
 
     public void setColorToDefault() {

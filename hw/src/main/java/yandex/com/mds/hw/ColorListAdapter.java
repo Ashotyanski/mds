@@ -9,6 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
+import yandex.com.mds.hw.db.ColorDatabaseHelper;
 
 public class ColorListAdapter extends CursorAdapter {
     public ColorListAdapter(Context context, Cursor c) {

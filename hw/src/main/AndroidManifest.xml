@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name="yandex.com.mds.hw.MainApplication"
+        android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="yandex.com.mds.hw.activities.MainActivity"
+            android:name=".colors.ColorsActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
@@ -24,8 +24,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="yandex.com.mds.hw.activities.ColorActivity"
-            android:parentActivityName="yandex.com.mds.hw.activities.MainActivity"></activity>
+            android:name=".color_edit.ColorEditActivity"
+            android:parentActivityName=".colors.ColorsActivity" />
+        <activity
+            android:name=".colors.ColorImportExportActivity"
+            android:label="@string/title_activity_color_import_export"
+            android:parentActivityName=".colors.ColorsActivity" />
     </application>
 
 </manifest>

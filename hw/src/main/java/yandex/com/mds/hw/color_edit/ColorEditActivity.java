@@ -1,9 +1,10 @@
-package yandex.com.mds.hw.activities;
+package yandex.com.mds.hw.color_edit;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,20 +13,23 @@ import android.widget.EditText;
 
 import java.util.Date;
 
-import yandex.com.mds.hw.ColorDatabaseHelper;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.ColorPickerView;
 import yandex.com.mds.hw.colorpicker.colorview.EditableColorView;
-import yandex.com.mds.hw.fragments.ColorPickerDialog;
+import yandex.com.mds.hw.db.ColorDao;
+import yandex.com.mds.hw.db.ColorDaoImpl;
+import yandex.com.mds.hw.colorpicker.ColorPickerDialog;
 import yandex.com.mds.hw.models.ColorRecord;
+import yandex.com.mds.hw.utils.TimeUtils;
 
-public class ColorActivity extends AppCompatActivity implements ColorPickerDialog.OnColorSavedListener {
+public class ColorEditActivity extends AppCompatActivity implements ColorPickerDialog.OnColorSavedListener {
     public static final String ID = "id";
     public static final String COLOR = "color";
     public static final String DEFAULT_COLOR = "default_color";
     public static final String DESCRIPTION = "description";
     public static final String TITLE = "title";
-    ColorDatabaseHelper dbHelper = new ColorDatabaseHelper(this);
+    public static final String IS_VIEW_COUNTED = "isViewCounted";
+    ColorDao colorDao = new ColorDaoImpl();
 
     EditText titleView;
     EditText descriptionView;
@@ -33,8 +37,10 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     Button saveButton;
     ColorRecord colorRecord;
 
+    private boolean isViewCounted = false;
+
     public static Intent getInstance(Context c, int id) {
-        Intent intent = new Intent(c, ColorActivity.class);
+        Intent intent = new Intent(c, ColorEditActivity.class);
         intent.putExtra(ID, id);
         return intent;
     }
@@ -52,9 +58,20 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
 
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getInt(ID, -1) >= 0) {
-            colorRecord = ColorDatabaseHelper.fromCursor(dbHelper.getColor(extras.getInt(ID)));
+            colorRecord = colorDao.getColor(extras.getInt(ID));
             fillForm(colorRecord.getTitle(), colorRecord.getDescription(), colorRecord.getColor(), colorRecord.getColor());
             getSupportActionBar().setTitle(R.string.title_color_edit);
+            Log.d("ColorEditActivity", String.format("Created at %s, last edit at %s, last seen at %s,change to %s",
+                    TimeUtils.formatDateTime(colorRecord.getCreationDate()),
+                    TimeUtils.formatDateTime(colorRecord.getLastModificationDate()),
+                    TimeUtils.formatDateTime(colorRecord.getLastViewDate()),
+                    TimeUtils.formatDateTime(new Date())
+            ));
+            if (!isViewCounted) {
+                colorRecord.setLastViewDate(new Date());
+                colorDao.saveColor(colorRecord);
+                isViewCounted = true;
+            }
         } else {
             getSupportActionBar().setTitle(R.string.title_color_create);
         }
@@ -75,14 +92,14 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
                     colorRecord.setDescription(descriptionView.getText().toString());
                     colorRecord.setColor(colorView.getColor());
                     colorRecord.setLastModificationDate(new Date());
-                    dbHelper.saveColor(colorRecord);
+                    colorDao.saveColor(colorRecord);
                 } else {
                     colorRecord = new ColorRecord();
                     colorRecord.setTitle(titleView.getText().toString());
                     colorRecord.setDescription(descriptionView.getText().toString());
                     colorRecord.setColor(colorView.getColor());
                     colorRecord.setCreationDate(new Date());
-                    dbHelper.addColor(colorRecord);
+                    colorDao.addColor(colorRecord);
                 }
                 setResult(RESULT_OK);
                 finish();
@@ -100,7 +117,7 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_delete) {
             if (colorRecord != null)
-                dbHelper.deleteColor(colorRecord.getId());
+                colorDao.deleteColor(colorRecord.getId());
             setResult(RESULT_OK);
             finish();
             return true;
@@ -116,6 +133,7 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
                 savedInstanceState.getString(DESCRIPTION),
                 savedInstanceState.getInt(COLOR),
                 savedInstanceState.getInt(DEFAULT_COLOR));
+        isViewCounted = savedInstanceState.getBoolean(IS_VIEW_COUNTED);
     }
 
     @Override
@@ -125,6 +143,7 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
         outState.putString(DESCRIPTION, descriptionView.getText().toString());
         outState.putInt(COLOR, colorView.getColor());
         outState.putInt(DEFAULT_COLOR, colorView.getDefaultColor());
+        outState.putBoolean(IS_VIEW_COUNTED, isViewCounted);
     }
 
     private void fillForm(String title, String description, int color, int defaultColor) {
@@ -137,6 +156,6 @@ public class ColorActivity extends AppCompatActivity implements ColorPickerDialo
     @Override
     public void onColorSave(int color) {
         colorView.setDefaultColor(color);
-        colorView.setColor(color);
+        colorView.setColorToDefault();
     }
 }

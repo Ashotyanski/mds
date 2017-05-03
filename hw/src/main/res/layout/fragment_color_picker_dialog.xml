@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context="yandex.com.mds.hw.fragments.ColorPickerDialog">
+    tools:context="yandex.com.mds.hw.colorpicker.ColorPickerDialog">
 
     <yandex.com.mds.hw.colorpicker.ColorPickerView
         android:id="@+id/color_picker_view"
