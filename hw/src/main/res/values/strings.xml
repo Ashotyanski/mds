@@ -1,11 +1,14 @@
 <resources>
     <string name="app_name">hw</string>
-    <string name="title_activity_color_edit">Edit colorFilter</string>
-    <string name="title_activity_color_create">Create colorFilter</string>
+    <string name="title_activity_color_edit">Edit color</string>
+    <string name="title_activity_color_create">Create color</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_color_import_export">Import/Export colors</string>
     <string name="title_dialog_query_save">Query template title</string>
-    <string name="title_dialog_pick_color">Pick a colorFilter</string>
+    <string name="title_dialog_url_image_edit">Edit image URL</string>
+    <string name="title_dialog_pick_color">Pick a color</string>
+
+    <string name="content_description_image_url">Image URL</string>
 
     <string name="action_import_export">Import/Export colors</string>
     <string name="action_delete">Delete</string>
@@ -29,6 +32,8 @@
     <string name="success_color_import">Colors imported</string>
     <string name="success_color_export">Colors exported</string>
 
+    <string name="url_image_status_empty">No image</string>
+
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
     <string name="search">Search</string>
@@ -36,4 +41,5 @@
     <string name="to">To</string>
     <string name="pick">Pick</string>
     <string name="save">Save</string>
+    <string name="url_image_status_failed">Failed to load image</string>
 </resources>

@@ -12,6 +12,7 @@ import static android.provider.BaseColumns._ID;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.COLOR;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.CREATION_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.DESCRIPTION;
+import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.IMAGE_URL;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_MODIFICATION_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_VIEW_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TABLE_NAME;
@@ -19,6 +20,7 @@ import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TITLE;
 
 
 public class ColorDatabaseHelper extends SQLiteOpenHelper {
+    public static final String[] ALL_COLUMNS = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE, CREATION_DATE, IMAGE_URL};
     private static final int DATABASE_VERSION = 2;
     private static final String CREATE_QUERY = "CREATE TABLE " + TABLE_NAME + " (" +
             _ID + " INTEGER PRIMARY KEY, " +
@@ -27,7 +29,8 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
             COLOR + " INTEGER," +
             CREATION_DATE + " INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
             LAST_MODIFICATION_DATE + " INTEGER DEFAULT CURRENT_TIMESTAMP, " +
-            LAST_VIEW_DATE + " INTEGER" +
+            LAST_VIEW_DATE + " INTEGER," +
+            IMAGE_URL + " TEXT" +
             ");";
 
     private static final String DATABASE_NAME = "colors.db";
@@ -79,5 +82,9 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
         public static final String CREATION_DATE = "creationDate";
         public static final String LAST_MODIFICATION_DATE = "lastModificationDate";
         public static final String LAST_VIEW_DATE = "lastViewDate";
+        public static final String IMAGE_URL = "imageUrl";
+
+        private ColorEntry() {
+        }
     }
 }

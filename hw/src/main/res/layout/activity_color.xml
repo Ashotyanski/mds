@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_marginEnd="20dp"
         android:layout_toStartOf="@+id/filter_color"
         android:ems="10"
         android:hint="@string/hint_title"
@@ -22,9 +24,9 @@
         android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/title"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/title"
-        android:layout_toStartOf="@+id/filter_color"
         android:ems="10"
         android:hint="@string/hint_description"
         android:inputType="textPersonName"
@@ -35,11 +37,9 @@
         android:layout_width="@dimen/editable_color_width"
         android:layout_height="@dimen/editable_color_height"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="@dimen/editable_color_margin"
         android:fitsSystemWindows="true" />
 
     <View
-        android:id="@+id/shadow"
         android:layout_width="fill_parent"
         android:layout_height="@dimen/shadow_size"
         android:layout_alignEnd="@+id/filter_color"
@@ -47,15 +47,21 @@
         android:layout_below="@id/filter_color"
         android:background="@drawable/shadow" />
 
+    <yandex.com.mds.hw.color_edit.UrlImageView
+        android:id="@+id/url_image"
+        android:layout_width="@dimen/edit_color_width"
+        android:layout_height="@dimen/edit_color_height"
+        android:layout_alignStart="@+id/color"
+        android:layout_below="@+id/color"
+        android:layout_marginTop="@dimen/url_image_margin_top"
+        android:contentDescription="@string/content_description_image_url" />
+
     <Button
         android:id="@+id/save_button"
         style="@style/Widget.AppCompat.Button.Borderless.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/shadow"
-        android:layout_below="@+id/shadow"
-        android:layout_gravity="end"
-        android:layout_marginTop="@dimen/save_button_marginTop"
+        android:layout_alignBottom="@+id/url_image"
+        android:layout_alignParentStart="true"
         android:text="@string/save" />
-
 </RelativeLayout>

@@ -21,6 +21,7 @@ import static android.provider.BaseColumns._ID;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.COLOR;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.CREATION_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.DESCRIPTION;
+import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.IMAGE_URL;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_MODIFICATION_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_VIEW_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TABLE_NAME;
@@ -37,7 +38,7 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public ColorRecord[] getColors(Query query) {
         Cursor c = getColorsCursor(query);
-        ColorRecord[] records = recordsFromCursor(c);
+        ColorRecord[] records = toRecords(c);
         c.close();
         return records;
     }
@@ -50,7 +51,7 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public Cursor getColorsCursor(Query query) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] columns = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE};
+        String[] columns = ColorDatabaseHelper.ALL_COLUMNS;
         String sortOrder = null;
         String selection = null;
         String[] selectionArgs = null;
@@ -100,12 +101,12 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public ColorRecord getColor(int id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] columns = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE};
+        String[] columns = ColorDatabaseHelper.ALL_COLUMNS;
         String selection = _ID + " = ?";
         String[] selectionArgs = {String.valueOf(id)};
         Cursor c = db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
         c.moveToFirst();
-        ColorRecord result = recordFromCursor(c);
+        ColorRecord result = toRecord(c);
         c.close();
         return result;
     }
@@ -113,18 +114,7 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public boolean addColor(ColorRecord colorRecord) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(TITLE, colorRecord.getTitle());
-        contentValues.put(DESCRIPTION, colorRecord.getDescription());
-        contentValues.put(COLOR, colorRecord.getColor());
-        if (colorRecord.getCreationDate() != null)
-            contentValues.put(CREATION_DATE, colorRecord.getCreationDate().getTime());
-        if (colorRecord.getLastModificationDate() != null)
-            contentValues.put(LAST_MODIFICATION_DATE, colorRecord.getLastModificationDate().getTime());
-        if (colorRecord.getLastViewDate() != null)
-            contentValues.put(LAST_VIEW_DATE, colorRecord.getLastViewDate().getTime());
-
+        ContentValues contentValues = toContentValues(colorRecord);
         return db.insert(TABLE_NAME, null, contentValues) > -1;
     }
 
@@ -141,19 +131,7 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public boolean saveColor(ColorRecord colorRecord) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(_ID, colorRecord.getId());
-        contentValues.put(COLOR, colorRecord.getColor());
-        contentValues.put(TITLE, colorRecord.getTitle());
-        contentValues.put(DESCRIPTION, colorRecord.getDescription());
-        if (colorRecord.getCreationDate() != null)
-            contentValues.put(CREATION_DATE, colorRecord.getCreationDate().getTime());
-        if (colorRecord.getLastModificationDate() != null)
-            contentValues.put(LAST_MODIFICATION_DATE, colorRecord.getLastModificationDate().getTime());
-        if (colorRecord.getLastViewDate() != null)
-            contentValues.put(LAST_VIEW_DATE, colorRecord.getLastViewDate().getTime());
-
+        ContentValues contentValues = toContentValues(colorRecord);
         String selection = _ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(colorRecord.getId())};
 
@@ -178,7 +156,23 @@ public class ColorDaoImpl implements ColorDao {
         return false;
     }
 
-    private static ColorRecord recordFromCursor(Cursor cursor) {
+    private ContentValues toContentValues(ColorRecord colorRecord) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(_ID, colorRecord.getId());
+        contentValues.put(COLOR, colorRecord.getColor());
+        contentValues.put(TITLE, colorRecord.getTitle());
+        contentValues.put(DESCRIPTION, colorRecord.getDescription());
+        if (colorRecord.getCreationDate() != null)
+            contentValues.put(CREATION_DATE, colorRecord.getCreationDate().getTime());
+        if (colorRecord.getLastModificationDate() != null)
+            contentValues.put(LAST_MODIFICATION_DATE, colorRecord.getLastModificationDate().getTime());
+        if (colorRecord.getLastViewDate() != null)
+            contentValues.put(LAST_VIEW_DATE, colorRecord.getLastViewDate().getTime());
+        contentValues.put(IMAGE_URL, colorRecord.getImageUrl());
+        return contentValues;
+    }
+
+    private ColorRecord toRecord(Cursor cursor) {
         ColorRecord colorRecord = new ColorRecord();
         colorRecord.setId(cursor.getInt(cursor.getColumnIndex(_ID)));
         colorRecord.setColor(cursor.getInt(cursor.getColumnIndex(COLOR)));
@@ -187,14 +181,15 @@ public class ColorDaoImpl implements ColorDao {
         colorRecord.setCreationDate(new Date(cursor.getLong(cursor.getColumnIndex(CREATION_DATE))));
         colorRecord.setLastModificationDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE))));
         colorRecord.setLastViewDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE))));
+        colorRecord.setImageUrl(cursor.getString(cursor.getColumnIndex(IMAGE_URL)));
         return colorRecord;
     }
 
-    private static ColorRecord[] recordsFromCursor(Cursor cursor) {
+    private ColorRecord[] toRecords(Cursor cursor) {
         ColorRecord[] colorRecord = new ColorRecord[cursor.getCount()];
         int i = 0;
         while (cursor.moveToNext()) {
-            colorRecord[i] = recordFromCursor(cursor);
+            colorRecord[i] = toRecord(cursor);
             i++;
         }
         return colorRecord;
