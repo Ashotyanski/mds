@@ -1,5 +1,6 @@
 package yandex.com.mds.hw.colorpicker;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,8 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 import yandex.com.mds.hw.R;
+import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 
 /**
  * Dialog that shows a colorpicker
@@ -25,6 +26,15 @@ public class ColorPickerDialog extends DialogFragment {
     private OnColorSavedListener colorSavedListener;
 
     public ColorPickerDialog() {
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if (dialog != null && dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
     }
 
     public static ColorPickerDialog newInstance(int color) {
@@ -60,8 +70,6 @@ public class ColorPickerDialog extends DialogFragment {
                 dismiss();
             }
         });
-
-        getDialog().setTitle(R.string.title_dialog_pick_color);
         return root;
     }
 
