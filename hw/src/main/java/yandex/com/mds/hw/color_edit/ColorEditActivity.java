@@ -14,11 +14,11 @@ import android.widget.EditText;
 import java.util.Date;
 
 import yandex.com.mds.hw.R;
+import yandex.com.mds.hw.colorpicker.ColorPickerDialog;
 import yandex.com.mds.hw.colorpicker.ColorPickerView;
 import yandex.com.mds.hw.colorpicker.colorview.EditableColorView;
 import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
-import yandex.com.mds.hw.colorpicker.ColorPickerDialog;
 import yandex.com.mds.hw.models.ColorRecord;
 import yandex.com.mds.hw.utils.TimeUtils;
 
@@ -28,6 +28,7 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
     public static final String DEFAULT_COLOR = "default_color";
     public static final String DESCRIPTION = "description";
     public static final String TITLE = "title";
+    public static final String IMAGE_URL = "image_url";
     public static final String IS_VIEW_COUNTED = "isViewCounted";
 
     private ColorDao colorDao = new ColorDaoImpl();
@@ -36,6 +37,7 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
     EditText descriptionView;
     EditableColorView colorView;
     Button saveButton;
+    UrlImageView urlImageView;
     ColorRecord colorRecord;
 
     private boolean isViewCounted = false;
@@ -54,13 +56,14 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         descriptionView = (EditText) findViewById(R.id.description);
         colorView = (EditableColorView) findViewById(R.id.color);
         saveButton = (Button) findViewById(R.id.save_button);
+        urlImageView = (UrlImageView) findViewById(R.id.url_image);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getInt(ID, -1) >= 0) {
             colorRecord = colorDao.getColor(extras.getInt(ID));
-            fillForm(colorRecord.getTitle(), colorRecord.getDescription(), colorRecord.getColor(), colorRecord.getColor());
+            fillForm(colorRecord);
             getSupportActionBar().setTitle(R.string.title_activity_color_edit);
             Log.d("ColorEditActivity", String.format("Created at %s, last edit at %s, last seen at %s,change to %s",
                     TimeUtils.formatDateTime(colorRecord.getCreationDate()),
@@ -88,24 +91,30 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (colorRecord != null) {
-                    colorRecord.setTitle(titleView.getText().toString());
-                    colorRecord.setDescription(descriptionView.getText().toString());
-                    colorRecord.setColor(colorView.getColor());
-                    colorRecord.setLastModificationDate(new Date());
-                    colorDao.saveColor(colorRecord);
-                } else {
-                    colorRecord = new ColorRecord();
-                    colorRecord.setTitle(titleView.getText().toString());
-                    colorRecord.setDescription(descriptionView.getText().toString());
-                    colorRecord.setColor(colorView.getColor());
-                    colorRecord.setCreationDate(new Date());
-                    colorDao.addColor(colorRecord);
-                }
+                saveRecord();
                 setResult(RESULT_OK);
                 finish();
             }
         });
+    }
+
+    private void saveRecord() {
+        if (colorRecord != null) {
+            colorRecord.setTitle(titleView.getText().toString());
+            colorRecord.setDescription(descriptionView.getText().toString());
+            colorRecord.setColor(colorView.getColor());
+            colorRecord.setImageUrl(urlImageView.getUrl());
+            colorRecord.setLastModificationDate(new Date());
+            colorDao.saveColor(colorRecord);
+        } else {
+            colorRecord = new ColorRecord();
+            colorRecord.setTitle(titleView.getText().toString());
+            colorRecord.setDescription(descriptionView.getText().toString());
+            colorRecord.setColor(colorView.getColor());
+            colorRecord.setImageUrl(urlImageView.getUrl());
+            colorRecord.setCreationDate(new Date());
+            colorDao.addColor(colorRecord);
+        }
     }
 
     @Override
@@ -133,7 +142,8 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
                 savedInstanceState.getString(TITLE),
                 savedInstanceState.getString(DESCRIPTION),
                 savedInstanceState.getInt(COLOR),
-                savedInstanceState.getInt(DEFAULT_COLOR));
+                savedInstanceState.getInt(DEFAULT_COLOR),
+                savedInstanceState.getString(IMAGE_URL));
         isViewCounted = savedInstanceState.getBoolean(IS_VIEW_COUNTED);
     }
 
@@ -144,14 +154,20 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         outState.putString(DESCRIPTION, descriptionView.getText().toString());
         outState.putInt(COLOR, colorView.getColor());
         outState.putInt(DEFAULT_COLOR, colorView.getDefaultColor());
+        outState.putString(IMAGE_URL, urlImageView.getUrl());
         outState.putBoolean(IS_VIEW_COUNTED, isViewCounted);
     }
 
-    private void fillForm(String title, String description, int color, int defaultColor) {
+    private void fillForm(ColorRecord record) {
+        fillForm(record.getTitle(), record.getDescription(), record.getColor(), record.getColor(), record.getImageUrl());
+    }
+
+    private void fillForm(String title, String description, int color, int defaultColor, String url) {
         titleView.setText(title);
         descriptionView.setText(description);
         colorView.setDefaultColor(defaultColor);
         colorView.setColor(color);
+        urlImageView.applyUrl(url);
     }
 
     @Override

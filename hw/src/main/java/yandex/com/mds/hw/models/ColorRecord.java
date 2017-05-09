@@ -11,6 +11,7 @@ public class ColorRecord implements Parcelable {
     private String title;
     private String description;
     private Date creationDate, lastModificationDate, lastViewDate;
+    private String imageUrl;
 
     public int getId() {
         return id;
@@ -68,10 +69,18 @@ public class ColorRecord implements Parcelable {
         this.lastViewDate = lastViewDate;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public ColorRecord() {
     }
 
-    public ColorRecord(int id, int color, String title, String description, Date creationDate, Date lastModificationDate, Date lastViewDate) {
+    public ColorRecord(int id, int color, String title, String description, Date creationDate, Date lastModificationDate, Date lastViewDate, String imageUrl) {
         this.id = id;
         this.color = color;
         this.title = title;
@@ -79,6 +88,7 @@ public class ColorRecord implements Parcelable {
         this.creationDate = creationDate;
         this.lastModificationDate = lastModificationDate;
         this.lastViewDate = lastViewDate;
+        this.imageUrl = imageUrl;
     }
 
     @Override
@@ -95,6 +105,7 @@ public class ColorRecord implements Parcelable {
         dest.writeLong(this.creationDate != null ? this.creationDate.getTime() : -1);
         dest.writeLong(this.lastModificationDate != null ? this.lastModificationDate.getTime() : -1);
         dest.writeLong(this.lastViewDate != null ? this.lastViewDate.getTime() : -1);
+        dest.writeString(this.imageUrl);
     }
 
     protected ColorRecord(Parcel in) {
@@ -108,6 +119,7 @@ public class ColorRecord implements Parcelable {
         this.lastModificationDate = tmpLastModificationDate == -1 ? null : new Date(tmpLastModificationDate);
         long tmpLastViewDate = in.readLong();
         this.lastViewDate = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
+        this.imageUrl = in.readString();
     }
 
     public static final Creator<ColorRecord> CREATOR = new Creator<ColorRecord>() {
