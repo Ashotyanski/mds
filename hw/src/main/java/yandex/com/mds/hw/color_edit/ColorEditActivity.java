@@ -61,21 +61,29 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Bundle extras = getIntent().getExtras();
+
+        if (savedInstanceState != null) {
+            fillForm(savedInstanceState);
+            isViewCounted = savedInstanceState.getBoolean(IS_VIEW_COUNTED);
+        }
+
         if (extras != null && extras.getInt(ID, -1) >= 0) {
-            colorRecord = colorDao.getColor(extras.getInt(ID));
-            fillForm(colorRecord);
             getSupportActionBar().setTitle(R.string.title_activity_color_edit);
+            colorRecord = colorDao.getColor(extras.getInt(ID));
+            if (savedInstanceState == null) {
+                fillForm(colorRecord);
+                if (!isViewCounted) {
+                    colorRecord.setLastViewDate(new Date());
+                    colorDao.saveColor(colorRecord);
+                    isViewCounted = true;
+                }
+            }
             Log.d("ColorEditActivity", String.format("Created at %s, last edit at %s, last seen at %s,change to %s",
                     TimeUtils.formatDateTime(colorRecord.getCreationDate()),
                     TimeUtils.formatDateTime(colorRecord.getLastModificationDate()),
                     TimeUtils.formatDateTime(colorRecord.getLastViewDate()),
                     TimeUtils.formatDateTime(new Date())
             ));
-            if (!isViewCounted) {
-                colorRecord.setLastViewDate(new Date());
-                colorDao.saveColor(colorRecord);
-                isViewCounted = true;
-            }
         } else {
             getSupportActionBar().setTitle(R.string.title_activity_color_create);
         }
@@ -137,18 +145,6 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        fillForm(
-                savedInstanceState.getString(TITLE),
-                savedInstanceState.getString(DESCRIPTION),
-                savedInstanceState.getInt(COLOR),
-                savedInstanceState.getInt(DEFAULT_COLOR),
-                savedInstanceState.getString(IMAGE_URL));
-        isViewCounted = savedInstanceState.getBoolean(IS_VIEW_COUNTED);
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(TITLE, titleView.getText().toString());
@@ -161,6 +157,15 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
 
     private void fillForm(ColorRecord record) {
         fillForm(record.getTitle(), record.getDescription(), record.getColor(), record.getColor(), record.getImageUrl());
+    }
+
+    private void fillForm(Bundle savedInstanceState) {
+        fillForm(
+                savedInstanceState.getString(TITLE),
+                savedInstanceState.getString(DESCRIPTION),
+                savedInstanceState.getInt(COLOR),
+                savedInstanceState.getInt(DEFAULT_COLOR),
+                savedInstanceState.getString(IMAGE_URL));
     }
 
     private void fillForm(String title, String description, int color, int defaultColor, String url) {
