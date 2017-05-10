@@ -28,7 +28,7 @@
             android:name=".color_edit.ColorEditActivity"
             android:parentActivityName=".colors.ColorsActivity" />
         <activity
-            android:name=".colors.ColorImportExportActivity"
+            android:name=".color_import_export.ColorImportExportActivity"
             android:label="@string/title_activity_color_import_export"
             android:parentActivityName=".colors.ColorsActivity" />
     </application>
