@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.color_edit.ColorEditActivity;
+import yandex.com.mds.hw.color_import_export.ColorImportExportActivity;
 import yandex.com.mds.hw.colors.query.Query;
 import yandex.com.mds.hw.colors.query.presenters.QueryPresenter;
 import yandex.com.mds.hw.db.ColorDao;
@@ -68,7 +69,8 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
         });
         presenter = new QueryPresenter(this, this, (LinearLayout) findViewById(R.id.query));
 
-        bulkInserter = new ColorBulkInserter(this, new ColorBulkInserter.OnInsertFinishListener() {
+        bulkInserter = ColorBulkInserter.getInstance(this);
+        bulkInserter.setOnInsertFinishListener(new ColorBulkInserter.OnInsertFinishListener() {
             @Override
             public void onFinishInsert() {
                 Toast.makeText(ColorsActivity.this, "Insertion done", Toast.LENGTH_SHORT).show();
