@@ -101,7 +101,7 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public boolean addColor(ColorRecord colorRecord) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues contentValues = toContentValues(colorRecord);
+        ContentValues contentValues = toContentValues(colorRecord, false);
         return db.insert(TABLE_NAME, null, contentValues) > -1;
     }
 
@@ -118,7 +118,7 @@ public class ColorDaoImpl implements ColorDao {
     @Override
     public boolean saveColor(ColorRecord colorRecord) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues contentValues = toContentValues(colorRecord);
+        ContentValues contentValues = toContentValues(colorRecord, true);
         String selection = _ID + " LIKE ?";
         String[] selectionArgs = {String.valueOf(colorRecord.getId())};
 
@@ -143,9 +143,10 @@ public class ColorDaoImpl implements ColorDao {
         return false;
     }
 
-    private ContentValues toContentValues(ColorRecord colorRecord) {
+    private ContentValues toContentValues(ColorRecord colorRecord, boolean isUpdate) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(_ID, colorRecord.getId());
+        if (isUpdate)
+            contentValues.put(_ID, colorRecord.getId());
         contentValues.put(COLOR, colorRecord.getColor());
         contentValues.put(TITLE, colorRecord.getTitle());
         contentValues.put(DESCRIPTION, colorRecord.getDescription());

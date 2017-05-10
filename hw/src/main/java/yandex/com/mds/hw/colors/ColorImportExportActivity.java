@@ -1,6 +1,7 @@
 package yandex.com.mds.hw.colors;
 
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -28,6 +29,8 @@ public class ColorImportExportActivity extends AppCompatActivity {
     public static class ColorImportExportFragment extends PreferenceFragment {
         public static final String SHARED_PREFERENCES_NAME = "colors_import_export";
         private ColorImporterExporter exporter;
+        private ColorImportTask importTask;
+        private ColorExportTask exportTask;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -40,15 +43,12 @@ public class ColorImportExportActivity extends AppCompatActivity {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     String file = getImportExportFilename();
-                    try {
-                        exporter.importColors(file);
-                        Log.d(TAG, "Colors imported from " + file);
-                        Toast.makeText(getActivity(), R.string.success_color_import, Toast.LENGTH_SHORT).show();
-                    } catch (IOException e) {
-                        Log.d(TAG, "Could not import colors from " + file);
-                        e.printStackTrace();
-                        Toast.makeText(getActivity(), R.string.error_color_import, Toast.LENGTH_SHORT).show();
+                    if (importTask != null && (importTask.getStatus() == AsyncTask.Status.PENDING || importTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                        importTask.cancel(true);
                     }
+                    importTask = new ColorImportTask(file);
+                    importTask.execute();
+                    getActivity().setResult(RESULT_OK);
                     return true;
                 }
             });
@@ -57,15 +57,12 @@ public class ColorImportExportActivity extends AppCompatActivity {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     String file = getImportExportFilename();
-                    try {
-                        exporter.exportColors(file);
-                        Log.d(TAG, "Colors exported to " + file);
-                        Toast.makeText(getActivity(), R.string.success_color_export, Toast.LENGTH_SHORT).show();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "Could not export colors to " + file);
-                        Toast.makeText(getActivity(), R.string.error_colors_export, Toast.LENGTH_SHORT).show();
+                    if (exportTask != null && (exportTask.getStatus() == AsyncTask.Status.PENDING || exportTask.getStatus() == AsyncTask.Status.RUNNING)) {
+                        exportTask.cancel(true);
                     }
+                    exportTask = new ColorExportTask(file);
+                    exportTask.execute();
+                    getActivity().setResult(RESULT_OK);
                     return true;
                 }
             });
@@ -74,6 +71,72 @@ public class ColorImportExportActivity extends AppCompatActivity {
         private String getImportExportFilename() {
             SharedPreferences s = getActivity().getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
             return s.getString("import_export_file", "colors.json");
+        }
+
+        private class ColorImportTask extends AsyncTask<String, Void, Void> {
+            private String filename;
+
+            ColorImportTask(String filename) {
+                this.filename = filename;
+            }
+
+            @Override
+            protected Void doInBackground(String... params) {
+                try {
+                    exporter.importColors(filename);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                Log.d(TAG, "Could not import colors from " + filename);
+                Toast.makeText(getActivity(), R.string.error_colors_import, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Log.d(TAG, "Colors imported from " + filename);
+                Toast.makeText(getActivity(), R.string.success_colors_import, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        private class ColorExportTask extends AsyncTask<String, Void, Void> {
+            private String filename;
+
+            public ColorExportTask(String filename) {
+                this.filename = filename;
+            }
+
+            @Override
+            protected Void doInBackground(String... params) {
+                try {
+                    exporter.exportColors(filename);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                Log.d(TAG, "Could not export colors to " + filename);
+                Toast.makeText(getActivity(), R.string.error_colors_export, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Log.d(TAG, "Colors exported to " + filename);
+                Toast.makeText(getActivity(), R.string.success_colors_export, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

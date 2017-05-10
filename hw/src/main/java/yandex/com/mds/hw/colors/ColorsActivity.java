@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -25,12 +28,17 @@ import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
 
 public class ColorsActivity extends AppCompatActivity implements QueryPresenter.OnApplyQueryListener {
-    public static final int COLOR_REQUEST_CODE = 1;
+    private static final String TAG = ColorsActivity.class.getName();
+    public static final int COLOR_EDIT_REQUEST_CODE = 1;
+    public static final int COLOR_IMPORT_EXPORT_REQUEST_CODE = 2;
+    private static final String QUERY_BUNDLE_KEY = "query";
     private static final String CURRENT_POSITION = "currentPosition";
     ColorDao colorDao = new ColorDaoImpl();
 
     private ListView listView;
     private QueryPresenter presenter;
+    private ColorLoaderAdapter colorLoaderAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +47,8 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Cursor c = colorDao.getColorsCursor();
-        CursorAdapter adapter = new ColorListAdapter(this, c);
-
         listView = (ListView) findViewById(R.id.list);
+        CursorAdapter adapter = new ColorListAdapter(this, null);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -60,23 +66,25 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
             }
         });
         presenter = new QueryPresenter(this, this, (LinearLayout) findViewById(R.id.query));
+
+        loadColors();
     }
 
     @Override
     public void onApply(Query query) {
-        updateListAdapter(query);
+        loadColors(query);
     }
 
     private void showColorEditActivity(int colorId) {
-        startActivityForResult(ColorEditActivity.getInstance(this, colorId), COLOR_REQUEST_CODE);
+        startActivityForResult(ColorEditActivity.getInstance(this, colorId), COLOR_EDIT_REQUEST_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == COLOR_REQUEST_CODE) {
+        if (requestCode == COLOR_EDIT_REQUEST_CODE || requestCode == COLOR_IMPORT_EXPORT_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                updateListAdapter();
+                loadColors();
             }
         }
     }
@@ -105,7 +113,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
             }
             case R.id.action_import_export: {
                 Intent intent = new Intent(this, ColorImportExportActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, COLOR_IMPORT_EXPORT_REQUEST_CODE);
                 return true;
             }
         }
@@ -115,23 +123,25 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        listView.smoothScrollToPosition(savedInstanceState.getInt(CURRENT_POSITION));
-        updateListAdapter();
+        loadColors();
+//        listView.smoothScrollToPosition(savedInstanceState.getInt(CURRENT_POSITION));
     }
 
-
-    private void updateListAdapter() {
+    private void loadColors() {
         try {
             Query query = presenter.getQuery();
-            updateListAdapter(query);
+            loadColors(query);
         } catch (ParseException e) {
-            updateListAdapter(null);
+            loadColors(null);
         }
     }
 
-    private void updateListAdapter(Query query) {
-        Cursor c = colorDao.getColorsCursor(query);
-        ((ColorListAdapter) listView.getAdapter()).changeCursor(c);
+    private void loadColors(Query query) {
+        if (colorLoaderAdapter == null) colorLoaderAdapter = new ColorLoaderAdapter();
+        if (getSupportLoaderManager().getLoader(1) == null)
+            getSupportLoaderManager().initLoader(1, getColorLoaderBundle(query), colorLoaderAdapter).forceLoad();
+        else
+            getSupportLoaderManager().restartLoader(1, getColorLoaderBundle(query), colorLoaderAdapter).forceLoad();
     }
 
     @Override
@@ -139,5 +149,37 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
         super.onSaveInstanceState(outState);
         presenter.closeQuery();
         outState.putInt(CURRENT_POSITION, listView.getFirstVisiblePosition());
+    }
+
+    private Bundle getColorLoaderBundle(Query query) {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(QUERY_BUNDLE_KEY, query);
+        return bundle;
+    }
+
+    private class ColorLoaderAdapter implements LoaderManager.LoaderCallbacks<Cursor> {
+        // Here we use simple AsyncTaskLoader instead of CursorLoader for sake of speed.
+        // Further it can (should) be replaced by the mentioned, with subsequent use of
+        // ContentProvider and ContentResolver for robust and flexible architecture
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, final Bundle args) {
+            return new AsyncTaskLoader<Cursor>(ColorsActivity.this) {
+                @Override
+                public Cursor loadInBackground() {
+                    Query query = args.getParcelable(QUERY_BUNDLE_KEY);
+                    return colorDao.getColorsCursor(query);
+                }
+            };
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            ((ColorListAdapter) listView.getAdapter()).changeCursor(data);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
     }
 }
