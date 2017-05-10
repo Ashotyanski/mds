@@ -1,8 +1,11 @@
 package yandex.com.mds.hw.colors.query.clauses;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 
-public class DateIntervalFilter {
+public class DateIntervalFilter implements Parcelable {
     private Date from, to;
     private String field;
 
@@ -38,6 +41,38 @@ public class DateIntervalFilter {
     public void setField(String field) {
         this.field = field;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.from != null ? this.from.getTime() : -1);
+        dest.writeLong(this.to != null ? this.to.getTime() : -1);
+        dest.writeString(this.field);
+    }
+
+    protected DateIntervalFilter(Parcel in) {
+        long tmpFrom = in.readLong();
+        this.from = tmpFrom == -1 ? null : new Date(tmpFrom);
+        long tmpTo = in.readLong();
+        this.to = tmpTo == -1 ? null : new Date(tmpTo);
+        this.field = in.readString();
+    }
+
+    public static final Parcelable.Creator<DateIntervalFilter> CREATOR = new Parcelable.Creator<DateIntervalFilter>() {
+        @Override
+        public DateIntervalFilter createFromParcel(Parcel source) {
+            return new DateIntervalFilter(source);
+        }
+
+        @Override
+        public DateIntervalFilter[] newArray(int size) {
+            return new DateIntervalFilter[size];
+        }
+    };
 
     @Override
     public String toString() {

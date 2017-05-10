@@ -27,10 +27,10 @@
     <string name="error_query_save">Could not save query template in</string>
     <string name="error_date_incorrect">Incorrect date</string>
 
-    <string name="error_color_import">Could not import colors</string>
+    <string name="error_colors_import">Could not import colors</string>
     <string name="error_colors_export">Could not export colors</string>
-    <string name="success_color_import">Colors imported</string>
-    <string name="success_color_export">Colors exported</string>
+    <string name="success_colors_import">Colors imported</string>
+    <string name="success_colors_export">Colors exported</string>
 
     <string name="url_image_status_empty">No image</string>
 
