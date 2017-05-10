@@ -77,16 +77,16 @@ public class DatesFilterPresenter {
         dateSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                toggleDateFilter(isChecked);
+                toggle(isChecked);
             }
         });
         dateSwitch.setChecked(false);
-        toggleDateFilter(false);
+        toggle(false);
 
         dateTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                toggleDateMode(position == 0);
+                switchDateMode(position == 0);
             }
 
             @Override
@@ -131,14 +131,35 @@ public class DatesFilterPresenter {
         dateFrom.setHint(toExact ? "" : "From");
     }
 
-    public void fillDates(DateFilter dateFilter, DateIntervalFilter dateIntervalFilter) {
+    public void fill(DateFilter dateFilter, DateIntervalFilter dateIntervalFilter) {
         if (dateFilter == null && dateIntervalFilter == null) {
             dateSwitch.setChecked(false);
-            toggleDateFilter(false);
+            toggle(false);
             return;
         }
         fillDateFilter(dateFilter);
         fillDateIntervalFilter(dateIntervalFilter);
+    }
+
+    public void clear() {
+        switchDateMode(true);
+        dateFrom.setText("");
+        dateTo.setText("");
+        dateTypeSpinner.setSelection(0);
+        toggle(false);
+        dateSwitch.setChecked(false);
+    }
+
+    public void switchDateMode(boolean toExact) {
+        dateTo.setVisibility(toExact ? View.GONE : View.VISIBLE);
+        dateFrom.setHint(toExact ? "" : "From");
+    }
+
+    private void toggle(boolean isEnabled) {
+        dateTypeSpinner.setEnabled(isEnabled);
+        dateFieldSpinner.setEnabled(isEnabled);
+        dateFrom.setEnabled(isEnabled);
+        dateTo.setEnabled(isEnabled);
     }
 
     private void fillDateFilter(DateFilter filter) {
@@ -146,7 +167,7 @@ public class DatesFilterPresenter {
             dateSwitch.setChecked(true);
             dateTypeSpinner.setSelection(0);
             dateFieldSpinner.setSelection(Utils.getDateFilterFieldPosition(filter.getField()));
-            toggleDateMode(true);
+            switchDateMode(true);
             dateFrom.setText(TimeUtils.formatDateTime(filter.getDate()));
         }
     }
@@ -157,7 +178,7 @@ public class DatesFilterPresenter {
             dateTypeSpinner.setSelection(1);
             dateFieldSpinner.setSelection(Utils.getDateFilterFieldPosition(filter.getField()));
             dateFrom.setText(TimeUtils.formatDateTime(filter.getFrom()));
-            toggleDateMode(false);
+            switchDateMode(false);
             dateTo.setText(TimeUtils.formatDateTime(filter.getTo()));
         }
     }

@@ -41,26 +41,26 @@ public class SortPresenter {
         sortSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                toggleSort(isChecked);
+                toggle(isChecked);
             }
         });
         sortSwitch.setChecked(false);
-        toggleSort(false);
+        toggle(false);
     }
 
-    private void toggleSort(boolean isEnable) {
+    private void toggle(boolean isEnable) {
         sortFieldSpinner.setEnabled(isEnable);
         sortOrderSpinner.setEnabled(isEnable);
     }
 
-    public void fillSort(Sort sort) {
+    public void fill(Sort sort) {
         if (sort != null) {
             sortSwitch.setChecked(true);
             sortOrderSpinner.setSelection(sort.isDescending() ? 0 : 1);
             sortFieldSpinner.setSelection(Utils.getSortFieldPosition(sort.getField()));
         } else {
             sortSwitch.setChecked(false);
-            toggleSort(false);
+            toggle(false);
         }
     }
 
@@ -70,5 +70,12 @@ public class SortPresenter {
             sort = new Sort(sortOrderSpinner.getSelectedItemPosition() == 0, (String) sortFieldSpinner.getSelectedItem());
         }
         return sort;
+    }
+
+    public void clear() {
+        sortOrderSpinner.setSelection(0);
+        sortFieldSpinner.setSelection(0);
+        sortSwitch.setChecked(false);
+        toggle(false);
     }
 }

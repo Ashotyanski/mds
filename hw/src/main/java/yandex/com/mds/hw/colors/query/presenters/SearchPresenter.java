@@ -23,4 +23,8 @@ public class SearchPresenter {
         if (search.equals("")) search = null;
         return search;
     }
+
+    public void clear() {
+        searchView.setText("");
+    }
 }
