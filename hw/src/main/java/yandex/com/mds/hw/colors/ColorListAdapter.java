@@ -34,10 +34,12 @@ public class ColorListAdapter extends CursorAdapter {
         String title = cursor.getString(cursor.getColumnIndexOrThrow(ColorDatabaseHelper.ColorEntry.TITLE));
         String description = cursor.getString(cursor.getColumnIndexOrThrow(ColorDatabaseHelper.ColorEntry.DESCRIPTION));
         int color = cursor.getInt(cursor.getColumnIndexOrThrow(ColorDatabaseHelper.ColorEntry.COLOR));
+        int id = cursor.getInt(cursor.getColumnIndex(ColorDatabaseHelper.ColorEntry._ID));
 
         holder.titleView.setText(title);
         holder.descriptionView.setText(description);
         holder.colorView.setColor(color);
+        holder.id = id;
     }
 
     public class ViewHolder {

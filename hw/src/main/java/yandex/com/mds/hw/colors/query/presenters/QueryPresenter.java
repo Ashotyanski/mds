@@ -40,7 +40,6 @@ public class QueryPresenter {
     private Animator slideDownAnimator;
     private Animator slideUpAnimator;
 
-
     private SearchPresenter searchPresenter;
     private SortPresenter sortPresenter;
     private DatesFilterPresenter datesFilterPresenter;
@@ -75,18 +74,18 @@ public class QueryPresenter {
                 try {
                     Query query = getQuery();
                     onApplyListener.onApply(query);
-                    closeQuery();
+                    close();
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
         });
 
-        Button cancelButton = (Button) root.findViewById(R.id.button_cancel);
+        Button cancelButton = (Button) root.findViewById(R.id.button_clear);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeQuery();
+                clear();
             }
         });
     }
@@ -169,19 +168,19 @@ public class QueryPresenter {
         slideUpAnimator.setTarget(root);
     }
 
-    public void toggleQuery() {
-        if (!isShown) showQuery();
-        else closeQuery();
+    public void toggle() {
+        if (!isShown) show();
+        else close();
     }
 
-    public void showQuery() {
+    public void show() {
         root.setVisibility(View.VISIBLE);
         root.setAlpha(0);
         slideDownAnimator.start();
         isShown = true;
     }
 
-    public void closeQuery() {
+    public void close() {
         slideUpAnimator.start();
         isShown = false;
     }
@@ -206,6 +205,12 @@ public class QueryPresenter {
         return query;
     }
 
+    public void clear() {
+        searchPresenter.clear();
+        sortPresenter.clear();
+        datesFilterPresenter.clear();
+    }
+
     private void fillQueriesTemplatesAdapter(String[] queriesTitles) {
         SpinnerAdapter queryTemplatesSpinnerAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, queriesTitles);
         queryTemplatesSpinner.setAdapter(queryTemplatesSpinnerAdapter);
@@ -213,8 +218,8 @@ public class QueryPresenter {
 
     private void fillQueryForm(Query query) {
         Log.d(TAG, String.format("Filling query form with %s", query));
-        sortPresenter.fillSort(query.getSort());
-        datesFilterPresenter.fillDates(query.getDateFilter(), query.getDateIntervalFilter());
+        sortPresenter.fill(query.getSort());
+        datesFilterPresenter.fill(query.getDateFilter(), query.getDateIntervalFilter());
     }
 
     private void saveQuery(String title) throws IOException, ParseException {

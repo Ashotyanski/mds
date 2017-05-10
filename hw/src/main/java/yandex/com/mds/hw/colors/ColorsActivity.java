@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.text.ParseException;
 
@@ -33,7 +34,9 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     public static final int COLOR_IMPORT_EXPORT_REQUEST_CODE = 2;
     private static final String QUERY_BUNDLE_KEY = "query";
     private static final String CURRENT_POSITION = "currentPosition";
-    ColorDao colorDao = new ColorDaoImpl();
+
+    private ColorDao colorDao = new ColorDaoImpl();
+    private ColorBulkInserter bulkInserter;
 
     private ListView listView;
     private QueryPresenter presenter;
@@ -67,6 +70,13 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
         });
         presenter = new QueryPresenter(this, this, (LinearLayout) findViewById(R.id.query));
 
+        bulkInserter = new ColorBulkInserter(this, new ColorBulkInserter.OnInsertFinishListener() {
+            @Override
+            public void onFinishInsert() {
+                Toast.makeText(ColorsActivity.this, "Insertion done", Toast.LENGTH_SHORT).show();
+                loadColors();
+            }
+        });
         loadColors();
     }
 
@@ -98,7 +108,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (presenter.isShown() && !presenter.isTouched(ev.getX(), ev.getY())) {
-            presenter.closeQuery();
+            presenter.close();
             return true;
         }
         return super.dispatchTouchEvent(ev);
@@ -108,12 +118,21 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_filter: {
-                presenter.toggleQuery();
+                presenter.toggle();
                 return true;
             }
             case R.id.action_import_export: {
                 Intent intent = new Intent(this, ColorImportExportActivity.class);
                 startActivityForResult(intent, COLOR_IMPORT_EXPORT_REQUEST_CODE);
+                return true;
+            }
+            case R.id.action_bulk_add: {
+                bulkInserter.start();
+                return true;
+            }
+            case R.id.action_delete_all: {
+                colorDao.deleteColors();
+                loadColors();
                 return true;
             }
         }
@@ -147,7 +166,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        presenter.closeQuery();
+        presenter.close();
         outState.putInt(CURRENT_POSITION, listView.getFirstVisiblePosition());
     }
 
@@ -182,4 +201,5 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
 
         }
     }
+
 }
