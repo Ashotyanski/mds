@@ -1,6 +1,7 @@
 package yandex.com.mds.hw.db;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +13,7 @@ import yandex.com.mds.hw.models.ColorRecord;
 import static yandex.com.mds.hw.utils.SerializationUtils.GSON;
 
 public class ColorImporterExporter {
+    private static final String TAG = ColorImporterExporter.class.getName();
     private ColorDao colorDao;
     private Context c;
 
@@ -33,7 +35,8 @@ public class ColorImporterExporter {
     }
 
     private void writeColors(ColorRecord[] colors, String filename) throws IOException {
-        File exportFile = new File(c.getCacheDir(), filename);
+        File exportFile = new File(c.getExternalFilesDir(null), filename);
+        Log.d(TAG, "Writing data to " + exportFile);
         if (!exportFile.exists()) {
             exportFile.createNewFile();
         }
@@ -44,7 +47,8 @@ public class ColorImporterExporter {
     }
 
     private ColorRecord[] readColors(String filename) throws IOException {
-        File importFile = new File(c.getCacheDir(), filename);
+        File importFile = new File(c.getExternalFilesDir(null), filename);
+        Log.d(TAG, "Reading data from " + importFile);
         FileReader reader = new FileReader(importFile);
         return GSON.fromJson(reader, ColorRecord[].class);
     }
