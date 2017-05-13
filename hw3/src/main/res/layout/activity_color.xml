@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/color"
+        android:layout_toStartOf="@+id/colorFilter"
         android:ems="10"
         android:hint="@string/title_hint"
         android:inputType="textPersonName"
@@ -24,14 +24,14 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/title"
-        android:layout_toStartOf="@+id/color"
+        android:layout_toStartOf="@+id/colorFilter"
         android:ems="10"
         android:hint="@string/description_hint"
         android:inputType="textPersonName"
         android:maxLength="50" />
 
     <yandex.com.mds.hw3.colorpicker.colorview.EditableColorView
-        android:id="@+id/color"
+        android:id="@+id/colorFilter"
         android:layout_width="@dimen/editable_color_width"
         android:layout_height="@dimen/editable_color_height"
         android:layout_alignParentEnd="true"
@@ -42,9 +42,9 @@
         android:id="@+id/shadow"
         android:layout_width="fill_parent"
         android:layout_height="@dimen/shadow_size"
-        android:layout_alignEnd="@+id/color"
-        android:layout_alignStart="@+id/color"
-        android:layout_below="@id/color"
+        android:layout_alignEnd="@+id/colorFilter"
+        android:layout_alignStart="@+id/colorFilter"
+        android:layout_below="@id/colorFilter"
         android:background="@drawable/shadow" />
 
     <Button

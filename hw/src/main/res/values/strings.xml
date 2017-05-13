@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">hw</string>
-    <string name="title_activity_color_edit">Edit color</string>
-    <string name="title_activity_color_create">Create color</string>
+    <string name="title_activity_color_edit">Edit colorFilter</string>
+    <string name="title_activity_color_create">Create colorFilter</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_color_import_export">Import/Export colors</string>
     <string name="title_dialog_query_save">Query template title</string>
-    <string name="title_dialog_pick_color">Pick a color</string>
+    <string name="title_dialog_pick_color">Pick a colorFilter</string>
 
     <string name="action_import_export">Import/Export colors</string>
     <string name="action_delete">Delete</string>

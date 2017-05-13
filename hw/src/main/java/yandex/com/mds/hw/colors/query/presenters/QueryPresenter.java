@@ -24,7 +24,6 @@ import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Map;
 
 import yandex.com.mds.hw.R;
@@ -44,6 +43,7 @@ public class QueryPresenter {
     private SearchPresenter searchPresenter;
     private SortPresenter sortPresenter;
     private DatesFilterPresenter datesFilterPresenter;
+    private ColorFilterPresenter colorFilterPresenter;
     private boolean isShown = false;
 
     private Spinner queryTemplatesSpinner;
@@ -57,6 +57,7 @@ public class QueryPresenter {
         sortPresenter = new SortPresenter(context, (LinearLayout) root.findViewById(R.id.sort_root));
         datesFilterPresenter = new DatesFilterPresenter(context, (RelativeLayout) root.findViewById(R.id.filter_date_root));
         searchPresenter = new SearchPresenter(context, (LinearLayout) root.findViewById(R.id.search_root));
+        colorFilterPresenter = new ColorFilterPresenter(context, (LinearLayout) root.findViewById(R.id.filter_color_root));
         initQueryTemplates();
         initAnimators();
     }
@@ -72,13 +73,9 @@ public class QueryPresenter {
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    Query query = getQuery();
-                    onApplyListener.onApply(query);
-                    closeQuery();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                Query query = getQuery();
+                onApplyListener.onApply(query);
+                closeQuery();
             }
         });
 
@@ -130,8 +127,6 @@ public class QueryPresenter {
                         } catch (IOException e) {
                             Toast.makeText(context, context.getString(R.string.error_query_save) + title, Toast.LENGTH_SHORT)
                                     .show();
-                            e.printStackTrace();
-                        } catch (ParseException e) {
                             e.printStackTrace();
                         }
                     }
@@ -196,12 +191,13 @@ public class QueryPresenter {
         return isShown;
     }
 
-    public Query getQuery() throws ParseException {
+    public Query getQuery() {
         Query query = new Query();
         query.setSort(sortPresenter.getSort());
         query.setDateFilter(datesFilterPresenter.getDateFilter());
         query.setDateIntervalFilter(datesFilterPresenter.getDateIntervalFilter());
         query.setSearch(searchPresenter.getSearch());
+        query.setColorFilter(colorFilterPresenter.getColorFilter());
         Log.d(TAG, String.format("Current query is %s", query));
         return query;
     }
@@ -217,7 +213,7 @@ public class QueryPresenter {
         datesFilterPresenter.fillDates(query.getDateFilter(), query.getDateIntervalFilter());
     }
 
-    private void saveQuery(String title) throws IOException, ParseException {
+    private void saveQuery(String title) throws IOException {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES_KEY, Context.MODE_PRIVATE);
         Query query = getQuery();
         Log.d(TAG, String.format("Saving query %s into %s", query, title));

@@ -1,106 +1,56 @@
 package yandex.com.mds.hw.colorpicker;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
+import android.support.annotation.NonNull;
+import android.support.annotation.StyleRes;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 
-/**
- * Dialog that shows a colorpicker
- */
-public class ColorPickerDialog extends DialogFragment {
+public class ColorPickerDialog extends AlertDialog {
     private static final String COLOR = "COLOR";
 
     private ColorPickerView colorPickerView;
     private ColorView resultColor;
     private Button pickButton;
 
-    private OnColorSavedListener colorSavedListener;
+    private OnColorSavedListener mColorSavedListener;
 
-    public ColorPickerDialog() {
+    public ColorPickerDialog(@NonNull Context context, int color) {
+        this(context, 0, color, null);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        Dialog dialog = getDialog();
-        if (dialog != null && dialog.getWindow() != null) {
-            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-    }
-
-    public static ColorPickerDialog newInstance(int color) {
-        ColorPickerDialog fragment = new ColorPickerDialog();
-        Bundle args = new Bundle();
-        args.putInt(COLOR, color);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_color_picker_dialog, container, false);
+    public ColorPickerDialog(@NonNull Context context, @StyleRes int themeResId, int color, OnColorSavedListener colorSavedListener) {
+        super(context, themeResId);
+        mColorSavedListener = colorSavedListener;
+        View root = LayoutInflater.from(getContext()).inflate(R.layout.fragment_color_picker_dialog, null);
+        setView(root);
         colorPickerView = (ColorPickerView) root.findViewById(R.id.color_picker_view);
         resultColor = (ColorView) root.findViewById(R.id.color_view);
         pickButton = (Button) root.findViewById(R.id.pick_button);
 
-        if (getArguments() != null) {
-            resultColor.setColor(getArguments().getInt(COLOR));
-        }
-
+        resultColor.setColor(color);
         colorPickerView.setOnPickListener(new ColorPickerView.OnPickListener() {
             @Override
             public void onPick(int color) {
                 resultColor.setColor(color);
             }
         });
-
         pickButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                colorSavedListener.onColorSave(resultColor.getColor());
+                mColorSavedListener.onColorSave(resultColor.getColor());
                 dismiss();
             }
         });
-        return root;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(COLOR, resultColor.getColor());
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) {
-            resultColor.setColor(savedInstanceState.getInt(COLOR));
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnColorSavedListener) {
-            colorSavedListener = (OnColorSavedListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement OnColorSavedListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        colorSavedListener = null;
+    public void setOnColorSavedListener(OnColorSavedListener colorSavedListener) {
+        mColorSavedListener = colorSavedListener;
     }
 
     /**

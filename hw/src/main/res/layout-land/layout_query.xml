@@ -6,7 +6,7 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:padding="16dp"
-    android:visibility="gone">
+    android:visibility="visible">
 
     <LinearLayout
         android:id="@+id/search_root"
@@ -23,51 +23,59 @@
             android:inputType="textPersonName" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/sort_root"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_gravity="center_vertical">
 
-        <Switch
-            android:id="@+id/switch_sort"
+        <LinearLayout
+            android:id="@+id/sort_root"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/query_sort" />
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <Spinner
-            android:id="@+id/spinner_sort_order"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="50dp" />
+            <Switch
+                android:id="@+id/switch_sort"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/query_sort" />
 
-        <Spinner
-            android:id="@+id/spinner_sort_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            <Spinner
+                android:id="@+id/spinner_sort_order"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="50dp" />
 
-    </LinearLayout>
+            <Spinner
+                android:id="@+id/spinner_sort_field"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content" />
 
-    <LinearLayout
-        android:id="@+id/filter_color_root"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        </LinearLayout>
 
-        <Switch
-            android:id="@+id/switch_color"
+        <LinearLayout
+            android:id="@+id/filter_color_root"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/query_filter_by_color" />
+            android:layout_gravity="end"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <yandex.com.mds.hw.colorpicker.colorview.CircleColorView
-            android:id="@+id/filter_color"
-            android:layout_width="@dimen/circle_color_height"
-            android:layout_height="@dimen/circle_color_width"
-            android:layout_margin="5dp" />
-    </LinearLayout>
+            <Switch
+                android:id="@+id/switch_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/query_filter_by_color" />
+
+            <yandex.com.mds.hw.colorpicker.colorview.CircleColorView
+                android:id="@+id/filter_color"
+                android:layout_width="@dimen/circle_color_height"
+                android:layout_height="@dimen/circle_color_width"
+                android:layout_margin="5dp" />
+        </LinearLayout>
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/filter_date_root"

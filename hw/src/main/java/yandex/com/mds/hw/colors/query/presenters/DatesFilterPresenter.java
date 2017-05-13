@@ -1,6 +1,7 @@
 package yandex.com.mds.hw.colors.query.presenters;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,10 +9,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.TimePicker;
 
 import java.text.ParseException;
 import java.util.Calendar;
@@ -30,10 +32,11 @@ public class DatesFilterPresenter {
 
     private Spinner dateFieldSpinner;
     private Spinner dateTypeSpinner;
-    private EditText dateFrom;
-    private EditText dateTo;
-    private Calendar calendar;
+    private TextView dateFrom;
+    private TextView dateTo;
     private Switch dateSwitch;
+
+    private Calendar dateFromCalendar, dateToCalendar;
 
     public DatesFilterPresenter(Context context, ViewGroup root) {
         this.context = context;
@@ -50,38 +53,22 @@ public class DatesFilterPresenter {
         SpinnerAdapter fieldSpinnerAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, ClausesConstants.DATE_FILTER_FIELDS);
         dateFieldSpinner.setAdapter(fieldSpinnerAdapter);
 
-        dateFrom = (EditText) root.findViewById(R.id.filter_date_from);
+        dateFrom = (TextView) root.findViewById(R.id.filter_date_from);
+        dateFromCalendar = Calendar.getInstance();
+        dateFrom.setText(TimeUtils.dateFormatWithoutSeconds.format(dateFromCalendar.getTime()));
         dateFrom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatePickerDialog dialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        calendar = Calendar.getInstance();
-                        calendar.set(Calendar.YEAR, year);
-                        calendar.set(Calendar.MONTH, month);
-                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        dateFrom.setText(TimeUtils.dateFormat.format(calendar.getTime()));
-                    }
-                }, 1990, 1, 1);
-                dialog.show();
+                getDateTimePickerDialog(context, dateFromCalendar, dateFrom).show();
             }
         });
-        dateTo = (EditText) root.findViewById(R.id.filter_date_to);
+        dateTo = (TextView) root.findViewById(R.id.filter_date_to);
+        dateToCalendar = Calendar.getInstance();
+        dateTo.setText(TimeUtils.dateFormatWithoutSeconds.format(dateToCalendar.getTime()));
         dateTo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatePickerDialog dialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        calendar = Calendar.getInstance();
-                        calendar.set(Calendar.YEAR, year);
-                        calendar.set(Calendar.MONTH, month);
-                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        dateTo.setText(TimeUtils.dateFormat.format(calendar.getTime()));
-                    }
-                }, 1990, 1, 1);
-                dialog.show();
+                getDateTimePickerDialog(context, dateToCalendar, dateTo).show();
             }
         });
         dateTo.setVisibility(View.GONE);
@@ -107,6 +94,26 @@ public class DatesFilterPresenter {
 
             }
         });
+    }
+
+    private static DatePickerDialog getDateTimePickerDialog(final Context context, final Calendar dateToCalendar, final TextView dateTo) {
+        return new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, final int year, final int month, final int dayOfMonth) {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        dateToCalendar.set(Calendar.YEAR, year);
+                        dateToCalendar.set(Calendar.MONTH, month);
+                        dateToCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        dateToCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        dateToCalendar.set(Calendar.MINUTE, minute);
+                        dateTo.setText(TimeUtils.dateFormatWithoutSeconds.format(dateToCalendar.getTime()));
+                    }
+                }, dateToCalendar.get(Calendar.HOUR_OF_DAY), dateToCalendar.get(Calendar.MINUTE), true);
+                timePickerDialog.show();
+            }
+        }, dateToCalendar.get(Calendar.YEAR), dateToCalendar.get(Calendar.MONTH), dateToCalendar.get(Calendar.DAY_OF_MONTH));
     }
 
     private void toggleDateFilter(boolean isEnabled) {
@@ -152,43 +159,35 @@ public class DatesFilterPresenter {
         }
     }
 
-    public DateFilter getDateFilter() throws ParseException {
+    public DateFilter getDateFilter() {
         DateFilter filter = null;
         if (dateSwitch.isChecked() && dateTypeSpinner.getSelectedItemPosition() == 0) {
             // exact date
             filter = new DateFilter();
             filter.setField((String) dateFieldSpinner.getSelectedItem());
             try {
-                filter.setDate(TimeUtils.dateFormat.parse(dateFrom.getText().toString()));
+                filter.setDate(TimeUtils.dateFormatWithoutSeconds.parse(dateFrom.getText().toString()));
                 dateFrom.setError(null);
             } catch (ParseException e) {
-                dateFrom.setError(context.getString(R.string.error_date_incorrect));
                 e.printStackTrace();
-                throw e;
             }
         }
         return filter;
     }
 
-    public DateIntervalFilter getDateIntervalFilter() throws ParseException {
+    public DateIntervalFilter getDateIntervalFilter() {
         DateIntervalFilter filter = null;
         if (dateSwitch.isChecked() && dateTypeSpinner.getSelectedItemPosition() != 0) {
             filter = new DateIntervalFilter();
             try {
-                filter.setFrom(TimeUtils.dateFormat.parse(dateFrom.getText().toString()));
+                filter.setFrom(TimeUtils.dateFormatWithoutSeconds.parse(dateFrom.getText().toString()));
             } catch (ParseException e) {
-                dateFrom.setError(null);
-                dateFrom.setError(context.getString(R.string.error_date_incorrect));
                 e.printStackTrace();
-                throw e;
             }
             try {
-                filter.setTo(TimeUtils.dateFormat.parse(dateTo.getText().toString()));
+                filter.setTo(TimeUtils.dateFormatWithoutSeconds.parse(dateTo.getText().toString()));
             } catch (ParseException e) {
-                dateTo.setError(null);
-                dateTo.setError(context.getString(R.string.error_date_incorrect));
                 e.printStackTrace();
-                throw e;
             }
             filter.setField((String) dateFieldSpinner.getSelectedItem());
         }

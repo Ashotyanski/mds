@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
     <yandex.com.mds.hw.colorpicker.colorview.CircleColorView
-        android:id="@+id/color"
+        android:id="@+id/filter_color"
         android:layout_width="@dimen/circle_color_width"
         android:layout_height="@dimen/circle_color_height"
         android:layout_margin="@dimen/circle_color_margin" />

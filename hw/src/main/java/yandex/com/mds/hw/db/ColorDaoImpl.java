@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import yandex.com.mds.hw.MainApplication;
@@ -59,12 +60,18 @@ public class ColorDaoImpl implements ColorDao {
                 sortOrder = String.format("%s %s",
                         Utils.getDbColumnFromField(sort.getField()),
                         sort.isDescending() ? "DESC" : "ASC");
+
             DateFilter dateFilter = query.getDateFilter();
             DateIntervalFilter dateIntervalFilter = query.getDateIntervalFilter();
             if (dateFilter != null && dateIntervalFilter == null) {
-                selection = String.format("%s = ?",
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dateFilter.getDate());
+                calendar.add(Calendar.HOUR, 1);
+                selection = String.format("(%s BETWEEN ? AND ?)",
                         Utils.getDbColumnFromField(dateFilter.getField()));
-                selectionArgs = new String[]{TimeUtils.formatDateTime(dateFilter.getDate())};
+                selectionArgs = new String[]{
+                        String.valueOf(TimeUtils.trimToHours(dateFilter.getDate()).getTime()),
+                        String.valueOf(TimeUtils.trimToHours(calendar.getTime()).getTime())};
             } else if (dateIntervalFilter != null && dateFilter == null) {
                 selection = String.format("(%s BETWEEN ? AND ?)",
                         Utils.getDbColumnFromField(dateIntervalFilter.getField()));
@@ -78,6 +85,12 @@ public class ColorDaoImpl implements ColorDao {
 
                 String regex = "%" + query.getSearch() + "%";
                 String[] newArgs = {regex, regex};
+                selectionArgs = selectionArgs == null ? newArgs : ArrayUtils.concatStringArrays(selectionArgs, newArgs);
+            }
+            if (query.getColorFilter() != null) {
+                String newSelection = String.format("(%s = ?)", COLOR);
+                selection = selection == null ? newSelection : selection + " AND " + newSelection;
+                String[] newArgs = {String.valueOf(query.getColorFilter().getColor())};
                 selectionArgs = selectionArgs == null ? newArgs : ArrayUtils.concatStringArrays(selectionArgs, newArgs);
             }
         }

@@ -14,11 +14,11 @@ import android.widget.EditText;
 import java.util.Date;
 
 import yandex.com.mds.hw.R;
+import yandex.com.mds.hw.colorpicker.ColorPickerDialog;
 import yandex.com.mds.hw.colorpicker.ColorPickerView;
 import yandex.com.mds.hw.colorpicker.colorview.EditableColorView;
 import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
-import yandex.com.mds.hw.colorpicker.ColorPickerDialog;
 import yandex.com.mds.hw.models.ColorRecord;
 import yandex.com.mds.hw.utils.TimeUtils;
 
@@ -52,7 +52,7 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         setContentView(R.layout.activity_color);
         titleView = (EditText) findViewById(R.id.title);
         descriptionView = (EditText) findViewById(R.id.description);
-        colorView = (EditableColorView) findViewById(R.id.color);
+        colorView = (EditableColorView) findViewById(R.id.filter_color);
         saveButton = (Button) findViewById(R.id.save_button);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -80,8 +80,9 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         colorView.setOnPickListener(new ColorPickerView.OnPickListener() {
             @Override
             public void onPick(int color) {
-                ColorPickerDialog pickerDialog = ColorPickerDialog.newInstance(color);
-                pickerDialog.show(getSupportFragmentManager(), "COLOR_PICKER");
+                ColorPickerDialog dialog = new ColorPickerDialog(ColorEditActivity.this, color);
+                dialog.setOnColorSavedListener(ColorEditActivity.this);
+                dialog.show();
             }
         });
 

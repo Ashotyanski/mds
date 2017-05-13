@@ -23,7 +23,7 @@
         android:text="Description" />
 
     <yandex.com.mds.hw3dev.colorpicker.colorview.ColorView
-        android:id="@+id/color"
+        android:id="@+id/colorFilter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp" />

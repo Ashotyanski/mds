@@ -59,7 +59,7 @@ public class ColorListAdapter extends CursorAdapter {
         public ViewHolder(View view) {
             titleView = (TextView) view.findViewById(R.id.title);
             descriptionView = (TextView) view.findViewById(R.id.description);
-            colorView = (ColorView) view.findViewById(R.id.color);
+            colorView = (ColorView) view.findViewById(R.id.filter_color);
         }
     }
 }
