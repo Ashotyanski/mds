@@ -45,8 +45,7 @@
             <Spinner
                 android:id="@+id/spinner_sort_order"
                 android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="50dp" />
+                android:layout_height="wrap_content" />
 
             <Spinner
                 android:id="@+id/spinner_sort_field"

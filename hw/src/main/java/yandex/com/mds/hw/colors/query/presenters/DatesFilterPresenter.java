@@ -100,18 +100,21 @@ public class DatesFilterPresenter {
         return new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, final int year, final int month, final int dayOfMonth) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        dateToCalendar.set(Calendar.YEAR, year);
-                        dateToCalendar.set(Calendar.MONTH, month);
-                        dateToCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        dateToCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        dateToCalendar.set(Calendar.MINUTE, minute);
-                        dateTo.setText(TimeUtils.dateFormatWithoutSeconds.format(dateToCalendar.getTime()));
-                    }
-                }, dateToCalendar.get(Calendar.HOUR_OF_DAY), dateToCalendar.get(Calendar.MINUTE), true);
-                timePickerDialog.show();
+                // Bug: https://issuetracker.google.com/issues/36951008
+                if (view.isShown()) {
+                    TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            dateToCalendar.set(Calendar.YEAR, year);
+                            dateToCalendar.set(Calendar.MONTH, month);
+                            dateToCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                            dateToCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            dateToCalendar.set(Calendar.MINUTE, minute);
+                            dateTo.setText(TimeUtils.dateFormatWithoutSeconds.format(dateToCalendar.getTime()));
+                        }
+                    }, dateToCalendar.get(Calendar.HOUR_OF_DAY), dateToCalendar.get(Calendar.MINUTE), true);
+                    timePickerDialog.show();
+                }
             }
         }, dateToCalendar.get(Calendar.YEAR), dateToCalendar.get(Calendar.MONTH), dateToCalendar.get(Calendar.DAY_OF_MONTH));
     }
