@@ -49,6 +49,7 @@ public class ColorImportExportActivity extends AppCompatActivity {
                         e.printStackTrace();
                         Toast.makeText(getActivity(), R.string.error_color_import, Toast.LENGTH_SHORT).show();
                     }
+                    getActivity().setResult(RESULT_OK);
                     return true;
                 }
             });

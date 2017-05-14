@@ -26,7 +26,9 @@ import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
 
 public class ColorsActivity extends AppCompatActivity implements QueryPresenter.OnApplyQueryListener {
-    public static final int COLOR_REQUEST_CODE = 1;
+    private static final String TAG = ColorsActivity.class.getName();
+    public static final int COLOR_EDIT_REQUEST_CODE = 1;
+    public static final int COLOR_IMPORT_EXPORT_REQUEST_CODE = 2;
     private static final String CURRENT_POSITION = "currentPosition";
     ColorDao colorDao = new ColorDaoImpl();
 
@@ -69,7 +71,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     }
 
     private void showColorEditActivity(int colorId) {
-        startActivityForResult(ColorEditActivity.getInstance(this, colorId), COLOR_REQUEST_CODE);
+        startActivityForResult(ColorEditActivity.getInstance(this, colorId), COLOR_EDIT_REQUEST_CODE);
     }
 
     private void playSound(double frequency, int duration) {
@@ -101,7 +103,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == COLOR_REQUEST_CODE) {
+        if (requestCode == COLOR_EDIT_REQUEST_CODE || requestCode == COLOR_IMPORT_EXPORT_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 updateListAdapter();
             }
@@ -133,7 +135,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
             }
             case R.id.action_import_export: {
                 Intent intent = new Intent(this, ColorImportExportActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, COLOR_IMPORT_EXPORT_REQUEST_CODE);
                 return true;
             }
         }
