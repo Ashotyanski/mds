@@ -22,7 +22,7 @@ import yandex.com.mds.hw.db.ColorDaoImpl;
 import yandex.com.mds.hw.models.ColorRecord;
 import yandex.com.mds.hw.utils.TimeUtils;
 
-public class ColorEditActivity extends AppCompatActivity implements ColorPickerDialog.OnColorSavedListener {
+public class ColorEditActivity extends AppCompatActivity {
     public static final String ID = "id";
     public static final String COLOR = "color";
     public static final String DEFAULT_COLOR = "default_color";
@@ -39,6 +39,10 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
     Button saveButton;
     UrlImageView urlImageView;
     ColorRecord colorRecord;
+
+    SaveTask saveTask;
+    AddTask addTask;
+    DeleteTask deleteTask;
 
     private boolean isViewCounted = false;
 
@@ -92,7 +96,13 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
             @Override
             public void onPick(int color) {
                 ColorPickerDialog dialog = new ColorPickerDialog(ColorEditActivity.this, color);
-                dialog.setOnColorSavedListener(ColorEditActivity.this);
+                dialog.setOnColorSavedListener(new ColorPickerDialog.OnColorSavedListener() {
+                    @Override
+                    public void onColorSave(int color) {
+                        colorView.setDefaultColor(color);
+                        colorView.setColorToDefault();
+                    }
+                });
                 dialog.show();
             }
         });
@@ -100,30 +110,41 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveRecord();
+                if (colorRecord != null) {
+                    saveRecord();
+                } else {
+                    addRecord();
+                }
                 setResult(RESULT_OK);
                 finish();
             }
         });
     }
 
+    private void addRecord() {
+        colorRecord = new ColorRecord();
+        colorRecord.setTitle(titleView.getText().toString());
+        colorRecord.setDescription(descriptionView.getText().toString());
+        colorRecord.setColor(colorView.getColor());
+        colorRecord.setImageUrl(urlImageView.getUrl());
+        colorRecord.setCreationDate(new Date());
+        addTask = new AddTask(colorDao);
+        addTask.execute(colorRecord);
+    }
+
     private void saveRecord() {
-        if (colorRecord != null) {
-            colorRecord.setTitle(titleView.getText().toString());
-            colorRecord.setDescription(descriptionView.getText().toString());
-            colorRecord.setColor(colorView.getColor());
-            colorRecord.setImageUrl(urlImageView.getUrl());
-            colorRecord.setLastModificationDate(new Date());
-            colorDao.saveColor(colorRecord);
-        } else {
-            colorRecord = new ColorRecord();
-            colorRecord.setTitle(titleView.getText().toString());
-            colorRecord.setDescription(descriptionView.getText().toString());
-            colorRecord.setColor(colorView.getColor());
-            colorRecord.setImageUrl(urlImageView.getUrl());
-            colorRecord.setCreationDate(new Date());
-            colorDao.addColor(colorRecord);
-        }
+        colorRecord.setTitle(titleView.getText().toString());
+        colorRecord.setDescription(descriptionView.getText().toString());
+        colorRecord.setColor(colorView.getColor());
+        colorRecord.setImageUrl(urlImageView.getUrl());
+        colorRecord.setLastModificationDate(new Date());
+        saveTask = new SaveTask(colorDao);
+        saveTask.execute(colorRecord);
+    }
+
+    private void deleteRecord() {
+        deleteTask = new DeleteTask(colorDao);
+        deleteTask.execute(colorRecord.getId());
     }
 
     @Override
@@ -135,9 +156,10 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_delete) {
-            if (colorRecord != null)
-                colorDao.deleteColor(colorRecord.getId());
-            setResult(RESULT_OK);
+            if (colorRecord != null) {
+                deleteRecord();
+                setResult(RESULT_OK);
+            }
             finish();
             return true;
         }
@@ -174,11 +196,5 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         colorView.setDefaultColor(defaultColor);
         colorView.setColor(color);
         urlImageView.applyUrl(url);
-    }
-
-    @Override
-    public void onColorSave(int color) {
-        colorView.setDefaultColor(color);
-        colorView.setColorToDefault();
     }
 }
