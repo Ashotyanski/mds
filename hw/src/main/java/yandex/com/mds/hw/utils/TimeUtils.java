@@ -8,6 +8,9 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class TimeUtils {
+    public static final SimpleDateFormat IsoDateFormat = new SimpleDateFormat(
+            "yyyy-MM-dd HH:mm:ss ZZZZZ", Locale.getDefault());
+
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat(
             "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
 
@@ -17,14 +20,6 @@ public class TimeUtils {
     public static final SimpleDateFormat dateFormatOnlyHours = new SimpleDateFormat(
             "yyyy-MM-dd HH", Locale.getDefault());
 
-
-    public static long getTimestamp() {
-        return new Date().getTime();
-    }
-
-    public static String formatDateTime(long timestamp) {
-        return formatDateTime(new Date(timestamp));
-    }
 
     public static String formatDateTime(Date date) {
         return formatDateTime(date, TimeZone.getTimeZone("UTC"));

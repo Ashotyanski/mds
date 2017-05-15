@@ -10,7 +10,7 @@ public class ColorRecord implements Parcelable {
     private int color;
     private String title;
     private String description;
-    private Date creationDate, lastModificationDate, lastViewDate;
+    private Date created, edited, viewed;
     private String imageUrl;
 
     public int getId() {
@@ -46,27 +46,27 @@ public class ColorRecord implements Parcelable {
     }
 
     public Date getCreationDate() {
-        return creationDate;
+        return created;
     }
 
     public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
+        this.created = creationDate;
     }
 
     public Date getLastModificationDate() {
-        return lastModificationDate;
+        return edited;
     }
 
     public void setLastModificationDate(Date lastModificationDate) {
-        this.lastModificationDate = lastModificationDate;
+        this.edited = lastModificationDate;
     }
 
     public Date getLastViewDate() {
-        return lastViewDate;
+        return viewed;
     }
 
     public void setLastViewDate(Date lastViewDate) {
-        this.lastViewDate = lastViewDate;
+        this.viewed = lastViewDate;
     }
 
     public String getImageUrl() {
@@ -85,9 +85,9 @@ public class ColorRecord implements Parcelable {
         this.color = color;
         this.title = title;
         this.description = description;
-        this.creationDate = creationDate;
-        this.lastModificationDate = lastModificationDate;
-        this.lastViewDate = lastViewDate;
+        this.created = creationDate;
+        this.edited = lastModificationDate;
+        this.viewed = lastViewDate;
         this.imageUrl = imageUrl;
     }
 
@@ -102,9 +102,9 @@ public class ColorRecord implements Parcelable {
         dest.writeInt(this.color);
         dest.writeString(this.title);
         dest.writeString(this.description);
-        dest.writeLong(this.creationDate != null ? this.creationDate.getTime() : -1);
-        dest.writeLong(this.lastModificationDate != null ? this.lastModificationDate.getTime() : -1);
-        dest.writeLong(this.lastViewDate != null ? this.lastViewDate.getTime() : -1);
+        dest.writeLong(this.created != null ? this.created.getTime() : -1);
+        dest.writeLong(this.edited != null ? this.edited.getTime() : -1);
+        dest.writeLong(this.viewed != null ? this.viewed.getTime() : -1);
         dest.writeString(this.imageUrl);
     }
 
@@ -114,11 +114,11 @@ public class ColorRecord implements Parcelable {
         this.title = in.readString();
         this.description = in.readString();
         long tmpCreationDate = in.readLong();
-        this.creationDate = tmpCreationDate == -1 ? null : new Date(tmpCreationDate);
+        this.created = tmpCreationDate == -1 ? null : new Date(tmpCreationDate);
         long tmpLastModificationDate = in.readLong();
-        this.lastModificationDate = tmpLastModificationDate == -1 ? null : new Date(tmpLastModificationDate);
+        this.edited = tmpLastModificationDate == -1 ? null : new Date(tmpLastModificationDate);
         long tmpLastViewDate = in.readLong();
-        this.lastViewDate = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
+        this.viewed = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
         this.imageUrl = in.readString();
     }
 
@@ -141,9 +141,9 @@ public class ColorRecord implements Parcelable {
                 ", color=" + color +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", creationDate=" + creationDate +
-                ", lastModificationDate=" + lastModificationDate +
-                ", lastViewDate=" + lastViewDate +
+                ", created=" + created +
+                ", edited=" + edited +
+                ", viewed=" + viewed +
                 '}';
     }
 }

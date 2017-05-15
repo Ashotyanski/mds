@@ -8,7 +8,7 @@ import java.lang.reflect.Modifier;
 public class SerializationUtils {
     public static final Gson GSON = new GsonBuilder()
             .excludeFieldsWithModifiers(Modifier.STATIC)
-            .setDateFormat(TimeUtils.dateFormat.toPattern())
+            .setDateFormat(TimeUtils.IsoDateFormat.toPattern())
             .create();
 
 }

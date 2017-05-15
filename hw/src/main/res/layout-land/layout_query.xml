@@ -144,11 +144,11 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/button_cancel"
+            android:id="@+id/button_clear"
             style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/cancel" />
+            android:text="@string/clear" />
 
         <Button
             android:id="@+id/button_apply"
