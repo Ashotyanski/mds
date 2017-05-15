@@ -1,5 +1,6 @@
 package yandex.com.mds.hw.color_import_export;
 
+import android.app.Notification;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import yandex.com.mds.hw.R;
+import yandex.com.mds.hw.utils.NotificationUtils;
 
 public class ColorImportExportActivity extends AppCompatActivity {
     private static final String TAG = ColorImportExportActivity.class.getName();
@@ -36,9 +38,19 @@ public class ColorImportExportActivity extends AppCompatActivity {
                 @Override
                 public void OnColorsExport(int result) {
                     if (result == ColorImporterExporter.SUCCESS_FLAG) {
+                        Notification.Builder builder = NotificationUtils
+                                .initNotificationBuilder(R.drawable.ic_import_export, " Colors export", "Colors exported");
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 2);
+
                         Log.d(TAG, "Colors exported to " + getImportExportFilename());
                         Toast.makeText(getActivity(), R.string.success_colors_export, Toast.LENGTH_SHORT).show();
                     } else {
+                        Notification.Builder builder = NotificationUtils
+                                .initNotificationBuilder(R.drawable.ic_import_export, " Colors export", "Export failed");
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 2);
+
                         Log.d(TAG, "Could not export colors to " + getImportExportFilename());
                         Toast.makeText(getActivity(), R.string.error_colors_export, Toast.LENGTH_SHORT).show();
                     }
@@ -48,9 +60,19 @@ public class ColorImportExportActivity extends AppCompatActivity {
                 @Override
                 public void OnColorsImport(int result) {
                     if (result == ColorImporterExporter.SUCCESS_FLAG) {
+                        Notification.Builder builder = NotificationUtils
+                                .initNotificationBuilder(R.drawable.ic_import_export, " Colors import", "Colors imported");
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 1);
+
                         Log.d(TAG, "Colors imported from " + getImportExportFilename());
                         Toast.makeText(getActivity(), R.string.success_colors_import, Toast.LENGTH_SHORT).show();
                     } else {
+                        Notification.Builder builder = NotificationUtils
+                                .initNotificationBuilder(R.drawable.ic_import_export, " Colors import", "Import failed");
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 1);
+
                         Log.d(TAG, "Could not import colors from " + getImportExportFilename());
                         Toast.makeText(getActivity(), R.string.error_colors_import, Toast.LENGTH_SHORT).show();
                     }
@@ -60,6 +82,11 @@ public class ColorImportExportActivity extends AppCompatActivity {
             importPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
+                    Notification.Builder builder = NotificationUtils
+                            .initNotificationBuilder(R.drawable.ic_import_export, " Colors import", "Importing colors");
+                    builder.setProgress(0, 0, true);
+                    NotificationUtils.send(builder.build(), 1);
+
                     String file = getImportExportFilename();
                     exporter.importColors(file);
                     getActivity().setResult(RESULT_OK);
@@ -70,6 +97,11 @@ public class ColorImportExportActivity extends AppCompatActivity {
             exportPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
+                    Notification.Builder builder = NotificationUtils
+                            .initNotificationBuilder(R.drawable.ic_import_export, " Colors export", "Exporting colors");
+                    builder.setProgress(0, 0, true);
+                    NotificationUtils.send(builder.build(), 2);
+
                     String file = getImportExportFilename();
                     exporter.exportColors(file);
                     return true;

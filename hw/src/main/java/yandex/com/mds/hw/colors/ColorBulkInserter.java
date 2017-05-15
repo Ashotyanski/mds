@@ -83,6 +83,8 @@ class ColorBulkInserter {
         progress.setMessage("Inserting colors");
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progress.setMax(totalCount);
+        progress.setCancelable(false);
+        progress.setCanceledOnTouchOutside(false);
         progress.show();
 
         for (int i = 0; i <= totalCount; i += transactionSize)
