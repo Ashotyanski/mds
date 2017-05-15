@@ -3,6 +3,8 @@ package yandex.com.mds.hw.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 
 public class ColorRecord implements Parcelable {
@@ -10,7 +12,12 @@ public class ColorRecord implements Parcelable {
     private int color;
     private String title;
     private String description;
-    private Date created, edited, viewed;
+    @SerializedName("created")
+    private Date creationDate;
+    @SerializedName("edited")
+    private Date lastModificationDate;
+    @SerializedName("viewed")
+    private Date lastViewDate;
     private String imageUrl;
 
     public int getId() {
@@ -46,27 +53,27 @@ public class ColorRecord implements Parcelable {
     }
 
     public Date getCreationDate() {
-        return created;
+        return creationDate;
     }
 
     public void setCreationDate(Date creationDate) {
-        this.created = creationDate;
+        this.creationDate = creationDate;
     }
 
     public Date getLastModificationDate() {
-        return edited;
+        return lastModificationDate;
     }
 
     public void setLastModificationDate(Date lastModificationDate) {
-        this.edited = lastModificationDate;
+        this.lastModificationDate = lastModificationDate;
     }
 
     public Date getLastViewDate() {
-        return viewed;
+        return lastViewDate;
     }
 
     public void setLastViewDate(Date lastViewDate) {
-        this.viewed = lastViewDate;
+        this.lastViewDate = lastViewDate;
     }
 
     public String getImageUrl() {
@@ -85,9 +92,9 @@ public class ColorRecord implements Parcelable {
         this.color = color;
         this.title = title;
         this.description = description;
-        this.created = creationDate;
-        this.edited = lastModificationDate;
-        this.viewed = lastViewDate;
+        this.creationDate = creationDate;
+        this.lastModificationDate = lastModificationDate;
+        this.lastViewDate = lastViewDate;
         this.imageUrl = imageUrl;
     }
 
@@ -102,9 +109,9 @@ public class ColorRecord implements Parcelable {
         dest.writeInt(this.color);
         dest.writeString(this.title);
         dest.writeString(this.description);
-        dest.writeLong(this.created != null ? this.created.getTime() : -1);
-        dest.writeLong(this.edited != null ? this.edited.getTime() : -1);
-        dest.writeLong(this.viewed != null ? this.viewed.getTime() : -1);
+        dest.writeLong(this.creationDate != null ? this.creationDate.getTime() : -1);
+        dest.writeLong(this.lastModificationDate != null ? this.lastModificationDate.getTime() : -1);
+        dest.writeLong(this.lastViewDate != null ? this.lastViewDate.getTime() : -1);
         dest.writeString(this.imageUrl);
     }
 
@@ -114,11 +121,11 @@ public class ColorRecord implements Parcelable {
         this.title = in.readString();
         this.description = in.readString();
         long tmpCreationDate = in.readLong();
-        this.created = tmpCreationDate == -1 ? null : new Date(tmpCreationDate);
+        this.creationDate = tmpCreationDate == -1 ? null : new Date(tmpCreationDate);
         long tmpLastModificationDate = in.readLong();
-        this.edited = tmpLastModificationDate == -1 ? null : new Date(tmpLastModificationDate);
+        this.lastModificationDate = tmpLastModificationDate == -1 ? null : new Date(tmpLastModificationDate);
         long tmpLastViewDate = in.readLong();
-        this.viewed = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
+        this.lastViewDate = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
         this.imageUrl = in.readString();
     }
 
@@ -141,9 +148,9 @@ public class ColorRecord implements Parcelable {
                 ", color=" + color +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", created=" + created +
-                ", edited=" + edited +
-                ", viewed=" + viewed +
+                ", creationDate=" + creationDate +
+                ", lastModificationDate=" + lastModificationDate +
+                ", lastViewDate=" + lastViewDate +
                 '}';
     }
 }
