@@ -11,6 +11,9 @@ import android.widget.Button;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 
+/**
+ * Dialog that shows a colorpicker
+ */
 public class ColorPickerDialog extends AlertDialog {
     private static final String COLOR = "COLOR";
 
