@@ -72,7 +72,6 @@ public class ColorImportExportActivity extends AppCompatActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     String file = getImportExportFilename();
                     exporter.exportColors(file);
-                    getActivity().setResult(RESULT_OK);
                     return true;
                 }
             });

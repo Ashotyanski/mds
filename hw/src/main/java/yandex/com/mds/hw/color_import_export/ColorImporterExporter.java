@@ -87,7 +87,7 @@ public class ColorImporterExporter {
 
         @Override
         public void run() {
-            File importFile = new File(context.getCacheDir(), filename);
+            File importFile = new File(context.getExternalFilesDir(null), filename);
             try {
                 Log.d(TAG, "Reading data from " + importFile);
                 FileReader reader = new FileReader(importFile);
@@ -113,7 +113,7 @@ public class ColorImporterExporter {
         public void run() {
             try {
                 ColorRecord[] records = colorDao.getColors();
-                File exportFile = new File(context.getCacheDir(), filename);
+                File exportFile = new File(context.getExternalFilesDir(null), filename);
                 Log.d(TAG, "Writing data to " + exportFile);
                 if (!exportFile.exists()) {
                     exportFile.createNewFile();

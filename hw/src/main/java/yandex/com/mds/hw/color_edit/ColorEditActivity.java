@@ -54,7 +54,7 @@ public class ColorEditActivity extends AppCompatActivity implements ColorPickerD
         setContentView(R.layout.activity_color);
         titleView = (EditText) findViewById(R.id.title);
         descriptionView = (EditText) findViewById(R.id.description);
-        colorView = (EditableColorView) findViewById(R.id.filter_color);
+        colorView = (EditableColorView) findViewById(R.id.color);
         saveButton = (Button) findViewById(R.id.save_button);
         urlImageView = (UrlImageView) findViewById(R.id.url_image);
 

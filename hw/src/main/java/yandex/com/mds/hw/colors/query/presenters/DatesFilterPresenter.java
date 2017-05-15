@@ -119,18 +119,6 @@ public class DatesFilterPresenter {
         }, dateToCalendar.get(Calendar.YEAR), dateToCalendar.get(Calendar.MONTH), dateToCalendar.get(Calendar.DAY_OF_MONTH));
     }
 
-    private void toggleDateFilter(boolean isEnabled) {
-        dateTypeSpinner.setEnabled(isEnabled);
-        dateFieldSpinner.setEnabled(isEnabled);
-        dateFrom.setEnabled(isEnabled);
-        dateTo.setEnabled(isEnabled);
-    }
-
-    public void toggleDateMode(boolean toExact) {
-        dateTo.setVisibility(toExact ? View.GONE : View.VISIBLE);
-        dateFrom.setHint(toExact ? "" : "From");
-    }
-
     public void fill(DateFilter dateFilter, DateIntervalFilter dateIntervalFilter) {
         if (dateFilter == null && dateIntervalFilter == null) {
             dateSwitch.setChecked(false);

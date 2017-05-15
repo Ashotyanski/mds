@@ -147,12 +147,8 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     }
 
     private void loadColors() {
-        try {
-            Query query = presenter.getQuery();
-            loadColors(query);
-        } catch (ParseException e) {
-            loadColors(null);
-        }
+        Query query = presenter.getQuery();
+        loadColors(query);
     }
 
     private void loadColors(Query query) {
