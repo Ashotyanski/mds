@@ -7,18 +7,18 @@
     tools:context="yandex.com.mds.hw2.ColorPickerDialog">
 
     <yandex.com.mds.hw2.views.ColorPickerView
-        android:id="@+id/color_picker_view"
+        android:conflictNotes="@+conflictNotes/color_picker_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <yandex.com.mds.hw2.views.colorView.ColorView
-        android:id="@+id/color_view"
+        android:conflictNotes="@+conflictNotes/color_view"
         android:layout_width="@dimen/result_color_size"
         android:layout_height="@dimen/result_color_size"
         android:layout_margin="50dp" />
 
     <Button
-        android:id="@+id/pick_button"
+        android:conflictNotes="@+conflictNotes/pick_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save" />

@@ -9,7 +9,7 @@ import java.util.TimeZone;
 
 public class TimeUtils {
     public static final SimpleDateFormat IsoDateFormat = new SimpleDateFormat(
-            "yyyy-MM-dd HH:mm:ss ZZZZZ", Locale.getDefault());
+            "yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.getDefault());
 
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat(
             "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
@@ -42,5 +42,11 @@ public class TimeUtils {
             e.printStackTrace();
             throw new RuntimeException();
         }
+    }
+
+    public static Date trimMilliseconds(Date date) {
+        long millis = date.getTime();
+        long truncatedMillis = 1000 * (millis / 1000);
+        return new Date(truncatedMillis);
     }
 }
