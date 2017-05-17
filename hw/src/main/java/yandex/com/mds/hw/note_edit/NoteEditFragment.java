@@ -1,18 +1,25 @@
 package yandex.com.mds.hw.note_edit;
 
-import android.content.Context;
-import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.app.ActionBar;
+import android.transition.TransitionInflater;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
 import java.util.Date;
 
+import yandex.com.mds.hw.MainActivity;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.ColorPickerDialog;
 import yandex.com.mds.hw.colorpicker.ColorPickerView;
@@ -20,9 +27,13 @@ import yandex.com.mds.hw.colorpicker.colorview.EditableColorView;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.db.NoteDaoImpl;
 import yandex.com.mds.hw.models.Note;
+import yandex.com.mds.hw.note_edit.tasks.AddTask;
+import yandex.com.mds.hw.note_edit.tasks.DeleteTask;
+import yandex.com.mds.hw.note_edit.tasks.SaveTask;
 import yandex.com.mds.hw.utils.TimeUtils;
 
-public class NoteEditActivity extends AppCompatActivity {
+public class NoteEditFragment extends Fragment {
+    private static final String TAG = NoteEditFragment.class.getName();
     public static final String ID = "id";
     public static final String OWNER_ID = "owner_id";
     public static final String COLOR = "color";
@@ -32,52 +43,72 @@ public class NoteEditActivity extends AppCompatActivity {
     public static final String IMAGE_URL = "image_url";
     public static final String IS_VIEW_COUNTED = "isViewCounted";
 
+    public static final String TRANSITION_NAME = "TRANSITION_NAME";
+
     private NoteDao noteDao = new NoteDaoImpl();
 
     EditText titleView;
     EditText descriptionView;
+
     EditableColorView colorView;
+
     Button saveButton;
     UrlImageView urlImageView;
     Note note;
-
     SaveTask saveTask;
+
     AddTask addTask;
     DeleteTask deleteTask;
-
     private boolean isViewCounted = false;
+
     private int ownerId = -1;
 
-    public static Intent getInstance(Context c, int id, int ownerId) {
-        Intent intent = new Intent(c, NoteEditActivity.class);
-        intent.putExtra(ID, id);
-        intent.putExtra(OWNER_ID, ownerId);
-        return intent;
+    public static NoteEditFragment newInstance(int noteId, int ownerId, String transitionName) {
+        Bundle args = new Bundle();
+        args.putInt(ID, noteId);
+        args.putInt(OWNER_ID, ownerId);
+        args.putString(TRANSITION_NAME, transitionName);
+        NoteEditFragment fragment = new NoteEditFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public NoteEditFragment() {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note_edit);
-        titleView = (EditText) findViewById(R.id.title);
-        descriptionView = (EditText) findViewById(R.id.description);
-        colorView = (EditableColorView) findViewById(R.id.color);
-        saveButton = (Button) findViewById(R.id.save_button);
-        urlImageView = (UrlImageView) findViewById(R.id.url_image);
+        setHasOptionsMenu(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
+            setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
+        }
+    }
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_note_edit, container, false);
 
-        Bundle extras = getIntent().getExtras();
+        titleView = (EditText) view.findViewById(R.id.title);
+        descriptionView = (EditText) view.findViewById(R.id.description);
+        saveButton = (Button) view.findViewById(R.id.save_button);
+        urlImageView = (UrlImageView) view.findViewById(R.id.url_image);
+        colorView = (EditableColorView) view.findViewById(R.id.color);
+
+        ActionBar toolbar = ((MainActivity) getActivity()).getSupportActionBar();
+
+        Bundle arguments = getArguments();
 
         if (savedInstanceState != null) {
             fillForm(savedInstanceState);
             isViewCounted = savedInstanceState.getBoolean(IS_VIEW_COUNTED);
         }
 
-        if (extras != null) {
-            if (extras.getInt(ID, -1) >= 0) {
-                getSupportActionBar().setTitle(R.string.title_activity_note_edit);
-                note = noteDao.getNote(extras.getInt(ID));
+        if (arguments != null) {
+            if (arguments.getInt(ID, -1) >= 0) {
+                toolbar.setTitle(R.string.title_activity_note_edit);
+                note = noteDao.getNote(arguments.getInt(ID));
                 ownerId = note.getOwnerId();
                 if (savedInstanceState == null) {
                     fillForm(note);
@@ -94,18 +125,18 @@ public class NoteEditActivity extends AppCompatActivity {
                         TimeUtils.formatDateTime(new Date())
                 ));
             } else {
-                ownerId = extras.getInt(OWNER_ID, -1);
-                getSupportActionBar().setTitle(R.string.title_activity_note_create);
+                ownerId = arguments.getInt(OWNER_ID, -1);
+                toolbar.setTitle(R.string.title_activity_note_create);
             }
         } else {
             ownerId = -1;
-            getSupportActionBar().setTitle(R.string.title_activity_note_create);
+            toolbar.setTitle(R.string.title_activity_note_create);
         }
 
         colorView.setOnPickListener(new ColorPickerView.OnPickListener() {
             @Override
             public void onPick(int color) {
-                ColorPickerDialog dialog = new ColorPickerDialog(NoteEditActivity.this, color);
+                ColorPickerDialog dialog = new ColorPickerDialog(getContext(), color);
                 dialog.setOnColorSavedListener(new ColorPickerDialog.OnColorSavedListener() {
                     @Override
                     public void onColorSave(int color) {
@@ -125,10 +156,19 @@ public class NoteEditActivity extends AppCompatActivity {
                 } else {
                     addRecord();
                 }
-                setResult(RESULT_OK);
-                finish();
+                getActivity().onBackPressed();
             }
         });
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        String transitionName = getArguments().getString(TRANSITION_NAME);
+        ViewCompat.setTransitionName(colorView, transitionName);
+//        colorView.setTransitionName(transitionName);
+        startPostponedEnterTransition();
     }
 
     private void addRecord() {
@@ -160,9 +200,8 @@ public class NoteEditActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_note_edit, menu);
-        return true;
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_note_edit, menu);
     }
 
     @Override
@@ -170,16 +209,16 @@ public class NoteEditActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_delete) {
             if (note != null) {
                 deleteRecord();
-                setResult(RESULT_OK);
+                //// TODO: 21.05.2017 get the fuck outta here
             }
-            finish();
+            getActivity().onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(TITLE, titleView.getText().toString());
         outState.putString(DESCRIPTION, descriptionView.getText().toString());
@@ -208,5 +247,9 @@ public class NoteEditActivity extends AppCompatActivity {
         colorView.setDefaultColor(defaultColor);
         colorView.setColor(color);
         urlImageView.applyUrl(url);
+    }
+
+    public EditableColorView getSharedView() {
+        return colorView;
     }
 }

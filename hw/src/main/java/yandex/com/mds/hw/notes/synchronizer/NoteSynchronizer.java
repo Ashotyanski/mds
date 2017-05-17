@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -186,7 +187,7 @@ public class NoteSynchronizer {
     }
 
     public Note findNoteByServerId(int ownerId, int serverId) {
-        Note[] records = noteDao.getNotes(null, ownerId);
+        List<Note> records = noteDao.getNotes(null, ownerId);
         for (Note record : records)
             if (record.getServerId() == serverId)
                 return record;

@@ -43,6 +43,7 @@ public class QueryPresenter {
     private SortPresenter sortPresenter;
     private DatesFilterPresenter datesFilterPresenter;
     private ColorFilterPresenter colorFilterPresenter;
+    private CustomOrderPresenter customOrderPresenter;
     private boolean isShown = false;
 
     private Spinner queryTemplatesSpinner;
