@@ -24,6 +24,7 @@ import yandex.com.mds.hw.utils.TimeUtils;
 
 public class ColorEditActivity extends AppCompatActivity {
     public static final String ID = "id";
+    public static final String OWNER_ID = "owner_id";
     public static final String COLOR = "color";
     public static final String DEFAULT_COLOR = "default_color";
     public static final String DESCRIPTION = "description";
@@ -45,10 +46,12 @@ public class ColorEditActivity extends AppCompatActivity {
     DeleteTask deleteTask;
 
     private boolean isViewCounted = false;
+    private int ownerId = -1;
 
-    public static Intent getInstance(Context c, int id) {
+    public static Intent getInstance(Context c, int id, int ownerId) {
         Intent intent = new Intent(c, ColorEditActivity.class);
         intent.putExtra(ID, id);
+        intent.putExtra(OWNER_ID, ownerId);
         return intent;
     }
 
@@ -71,24 +74,31 @@ public class ColorEditActivity extends AppCompatActivity {
             isViewCounted = savedInstanceState.getBoolean(IS_VIEW_COUNTED);
         }
 
-        if (extras != null && extras.getInt(ID, -1) >= 0) {
-            getSupportActionBar().setTitle(R.string.title_activity_color_edit);
-            colorRecord = colorDao.getColor(extras.getInt(ID));
-            if (savedInstanceState == null) {
-                fillForm(colorRecord);
-                if (!isViewCounted) {
-                    colorRecord.setLastViewDate(new Date());
-                    colorDao.saveColor(colorRecord);
-                    isViewCounted = true;
+        if (extras != null) {
+            if (extras.getInt(ID, -1) >= 0) {
+                getSupportActionBar().setTitle(R.string.title_activity_color_edit);
+                colorRecord = colorDao.getColor(extras.getInt(ID));
+                ownerId = colorRecord.getOwnerId();
+                if (savedInstanceState == null) {
+                    fillForm(colorRecord);
+                    if (!isViewCounted) {
+                        colorRecord.setLastViewDate(new Date());
+                        colorDao.saveColor(colorRecord);
+                        isViewCounted = true;
+                    }
                 }
+                Log.d("ColorEditActivity", String.format("Created at %s, last edit at %s, last seen at %s,change to %s",
+                        TimeUtils.formatDateTime(colorRecord.getCreationDate()),
+                        TimeUtils.formatDateTime(colorRecord.getLastModificationDate()),
+                        TimeUtils.formatDateTime(colorRecord.getLastViewDate()),
+                        TimeUtils.formatDateTime(new Date())
+                ));
+            } else {
+                ownerId = extras.getInt(OWNER_ID, -1);
+                getSupportActionBar().setTitle(R.string.title_activity_color_create);
             }
-            Log.d("ColorEditActivity", String.format("Created at %s, last edit at %s, last seen at %s,change to %s",
-                    TimeUtils.formatDateTime(colorRecord.getCreationDate()),
-                    TimeUtils.formatDateTime(colorRecord.getLastModificationDate()),
-                    TimeUtils.formatDateTime(colorRecord.getLastViewDate()),
-                    TimeUtils.formatDateTime(new Date())
-            ));
         } else {
+            ownerId = -1;
             getSupportActionBar().setTitle(R.string.title_activity_color_create);
         }
 
@@ -128,6 +138,8 @@ public class ColorEditActivity extends AppCompatActivity {
         colorRecord.setColor(colorView.getColor());
         colorRecord.setImageUrl(urlImageView.getUrl());
         colorRecord.setCreationDate(new Date());
+        colorRecord.setOwnerId(ownerId);
+        colorRecord.setServerId(-1);
         addTask = new AddTask(colorDao);
         addTask.execute(colorRecord);
     }

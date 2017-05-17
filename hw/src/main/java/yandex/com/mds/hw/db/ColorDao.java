@@ -8,15 +8,15 @@ import yandex.com.mds.hw.models.ColorRecord;
 public interface ColorDao {
     ColorRecord[] getColors();
 
-    ColorRecord[] getColors(Query query);
+    ColorRecord[] getColors(Query query, int userId);
 
     Cursor getColorsCursor();
 
-    Cursor getColorsCursor(Query query);
+    Cursor getColorsCursor(Query query, int userId);
 
     ColorRecord getColor(int id);
 
-    boolean addColor(ColorRecord record);
+    long addColor(ColorRecord record);
 
     boolean addColors(ColorRecord[] records);
 

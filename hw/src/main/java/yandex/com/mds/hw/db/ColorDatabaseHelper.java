@@ -15,13 +15,15 @@ import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.DESCRIPTION;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.IMAGE_URL;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_MODIFICATION_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_VIEW_DATE;
+import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.OWNER_ID;
+import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.SERVER_ID;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TABLE_NAME;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TITLE;
 
 
 public class ColorDatabaseHelper extends SQLiteOpenHelper {
-    public static final String[] ALL_COLUMNS = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE, CREATION_DATE, IMAGE_URL};
-    private static final int DATABASE_VERSION = 2;
+    public static final String[] ALL_COLUMNS = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE, CREATION_DATE, IMAGE_URL, OWNER_ID, SERVER_ID};
+    private static final int DATABASE_VERSION = 4;
     private static final String CREATE_QUERY = "CREATE TABLE " + TABLE_NAME + " (" +
             _ID + " INTEGER PRIMARY KEY, " +
             TITLE + " VARCHAR(50), " +
@@ -30,10 +32,12 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
             CREATION_DATE + " INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
             LAST_MODIFICATION_DATE + " INTEGER DEFAULT CURRENT_TIMESTAMP, " +
             LAST_VIEW_DATE + " INTEGER," +
-            IMAGE_URL + " TEXT" +
+            IMAGE_URL + " TEXT," +
+            OWNER_ID + " INTEGER, " +
+            SERVER_ID + " INTEGER DEFAULT -1" +
             ");";
 
-    private static final String DATABASE_NAME = "colors.db";
+    private static final String DATABASE_NAME = "notes.db";
     private static final String DELETE_QUERY = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
     private static ColorDatabaseHelper instance;
@@ -63,6 +67,7 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(TITLE, colorName);
             contentValues.put(DESCRIPTION, "This is for " + colorName.toLowerCase() + " color");
             contentValues.put(COLOR, colors.get(colorName));
+            contentValues.put(OWNER_ID, i);
             db.insert(TABLE_NAME, null, contentValues);
             i++;
         }
@@ -75,7 +80,7 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public final class ColorEntry implements BaseColumns {
-        public static final String TABLE_NAME = "colors";
+        public static final String TABLE_NAME = "notes";
         public static final String COLOR = "color";
         public static final String TITLE = "title";
         public static final String DESCRIPTION = "description";
@@ -83,6 +88,8 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
         public static final String LAST_MODIFICATION_DATE = "lastModificationDate";
         public static final String LAST_VIEW_DATE = "lastViewDate";
         public static final String IMAGE_URL = "imageUrl";
+        public static final String OWNER_ID = "owner_id";
+        public static final String SERVER_ID = "server_id";
 
         private ColorEntry() {
         }

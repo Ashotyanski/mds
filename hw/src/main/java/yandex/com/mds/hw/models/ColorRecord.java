@@ -19,6 +19,8 @@ public class ColorRecord implements Parcelable {
     @SerializedName("viewed")
     private Date lastViewDate;
     private String imageUrl;
+    private int ownerId;
+    private int serverId;
 
     public int getId() {
         return id;
@@ -98,6 +100,22 @@ public class ColorRecord implements Parcelable {
         this.imageUrl = imageUrl;
     }
 
+    public int getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public int getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(int serverId) {
+        this.serverId = serverId;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -113,6 +131,8 @@ public class ColorRecord implements Parcelable {
         dest.writeLong(this.lastModificationDate != null ? this.lastModificationDate.getTime() : -1);
         dest.writeLong(this.lastViewDate != null ? this.lastViewDate.getTime() : -1);
         dest.writeString(this.imageUrl);
+        dest.writeInt(this.ownerId);
+        dest.writeInt(this.serverId);
     }
 
     protected ColorRecord(Parcel in) {
@@ -127,6 +147,8 @@ public class ColorRecord implements Parcelable {
         long tmpLastViewDate = in.readLong();
         this.lastViewDate = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
         this.imageUrl = in.readString();
+        this.ownerId = in.readInt();
+        this.serverId = in.readInt();
     }
 
     public static final Creator<ColorRecord> CREATOR = new Creator<ColorRecord>() {
@@ -151,6 +173,9 @@ public class ColorRecord implements Parcelable {
                 ", creationDate=" + creationDate +
                 ", lastModificationDate=" + lastModificationDate +
                 ", lastViewDate=" + lastViewDate +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", ownerId=" + ownerId +
+                ", serverId=" + serverId +
                 '}';
     }
 }

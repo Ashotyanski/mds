@@ -24,6 +24,8 @@ import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.DESCRIPTION;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.IMAGE_URL;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_MODIFICATION_DATE;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.LAST_VIEW_DATE;
+import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.OWNER_ID;
+import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.SERVER_ID;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TABLE_NAME;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TITLE;
 
@@ -32,12 +34,12 @@ public class ColorDaoImpl implements ColorDao {
 
     @Override
     public ColorRecord[] getColors() {
-        return getColors(null);
+        return getColors(null, -1);
     }
 
     @Override
-    public ColorRecord[] getColors(Query query) {
-        Cursor c = getColorsCursor(query);
+    public ColorRecord[] getColors(Query query, int userId) {
+        Cursor c = getColorsCursor(query, -1);
         ColorRecord[] records = toRecords(c);
         c.close();
         return records;
@@ -45,11 +47,11 @@ public class ColorDaoImpl implements ColorDao {
 
     @Override
     public Cursor getColorsCursor() {
-        return getColorsCursor(null);
+        return getColorsCursor(null, -1);
     }
 
     @Override
-    public Cursor getColorsCursor(Query query) {
+    public Cursor getColorsCursor(Query query, int userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String[] columns = ColorDatabaseHelper.ALL_COLUMNS;
         String sortOrder = null;
@@ -95,6 +97,12 @@ public class ColorDaoImpl implements ColorDao {
                 selectionArgs = selectionArgs == null ? newArgs : ArrayUtils.concatStringArrays(selectionArgs, newArgs);
             }
         }
+        if (userId > -1) {
+            String newSelection = String.format("(%s = ?)", OWNER_ID);
+            selection = selection == null ? newSelection : selection + " AND " + newSelection;
+            String[] newArgs = {String.valueOf(userId)};
+            selectionArgs = selectionArgs == null ? newArgs : ArrayUtils.concatStringArrays(selectionArgs, newArgs);
+        }
         return db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, sortOrder);
     }
 
@@ -112,17 +120,17 @@ public class ColorDaoImpl implements ColorDao {
     }
 
     @Override
-    public boolean addColor(ColorRecord colorRecord) {
+    public long addColor(ColorRecord colorRecord) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues contentValues = toContentValues(colorRecord, false);
-        return db.insert(TABLE_NAME, null, contentValues) > -1;
+        return db.insert(TABLE_NAME, null, contentValues);
     }
 
     @Override
     public boolean addColors(ColorRecord[] records) {
         boolean isAddedWithoutErrors = true;
         for (ColorRecord record : records) {
-            if (!addColor(record))
+            if (addColor(record) > -1)
                 isAddedWithoutErrors = false;
         }
         return isAddedWithoutErrors;
@@ -170,6 +178,9 @@ public class ColorDaoImpl implements ColorDao {
         if (colorRecord.getLastViewDate() != null)
             contentValues.put(LAST_VIEW_DATE, colorRecord.getLastViewDate().getTime());
         contentValues.put(IMAGE_URL, colorRecord.getImageUrl());
+        if (!isUpdate)
+            contentValues.put(OWNER_ID, colorRecord.getOwnerId());
+        contentValues.put(SERVER_ID, colorRecord.getServerId());
         return contentValues;
     }
 
@@ -183,6 +194,8 @@ public class ColorDaoImpl implements ColorDao {
         colorRecord.setLastModificationDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE))));
         colorRecord.setLastViewDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE))));
         colorRecord.setImageUrl(cursor.getString(cursor.getColumnIndex(IMAGE_URL)));
+        colorRecord.setOwnerId(cursor.getInt(cursor.getColumnIndex(OWNER_ID)));
+        colorRecord.setServerId(cursor.getInt(cursor.getColumnIndex(SERVER_ID)));
         return colorRecord;
     }
 
