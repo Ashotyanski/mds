@@ -1,5 +1,7 @@
 package yandex.com.mds.hw.colors.synchronizer;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -17,6 +19,7 @@ import yandex.com.mds.hw.utils.NetworkUtils;
 import yandex.com.mds.hw.utils.SerializationUtils;
 
 public class NoteSynchronizer {
+    private static final String TAG = NoteSynchronizer.class.getName();
     public static final String SYNC_CONFLICT_ACTION = "SYNC_CONFLICT";
     private static final String STATUS_ADDED = "added";
     private static final String STATUS_EDITED = "edited";
@@ -27,11 +30,20 @@ public class NoteSynchronizer {
     private ColorDao colorDao = new ColorDaoImpl();
     private File unsynchronizedNotesPath;
     private NoteService service;
+    private UnsynchronizedNotes unsynchronizedNotes;
 
     public static NoteSynchronizer getInstance() {
         if (synchronizer == null)
             synchronizer = new NoteSynchronizer();
         return synchronizer;
+    }
+
+    public ColorRecord findNoteByServerId(int ownerId, int serverId) {
+        ColorRecord[] records = colorDao.getColors(null, ownerId);
+        for (ColorRecord record : records)
+            if (record.getServerId() == serverId)
+                return record;
+        return null;
     }
 
     private NoteSynchronizer() {
@@ -46,20 +58,22 @@ public class NoteSynchronizer {
                 e.printStackTrace();
             }
         }
+        readFromDisk();
     }
 
     public UnsynchronizedNotes getUnsynchronizedNotes(int ownerId) {
-        UnsynchronizedNotes notes = getUnsynchronizedNotes();
-        return notes.extractUnsynchronizedNotesForOwner(ownerId);
+        return unsynchronizedNotes.extractUnsynchronizedNotesForOwner(ownerId);
     }
 
     public void add(ColorRecord record) {
+        Log.d(TAG, "Add: " + record.toString());
         if (NetworkUtils.isConnected()) {
             try {
                 NoteServiceResponse<Integer> response = service.addNote(record.getOwnerId(), record).execute().body();
                 if (response.getStatus().equals("ok")) {
                     record.setServerId(response.getData());
                     colorDao.saveColor(record);
+                    removeIfExists(record);
                 } else throw new RuntimeException();
             } catch (Exception e) {
                 addToCache(record, STATUS_ADDED);
@@ -70,27 +84,14 @@ public class NoteSynchronizer {
         }
     }
 
-    public void delete(ColorRecord record) {
-        if (NetworkUtils.isConnected()) {
-            try {
-                NoteServiceResponse response = service.deleteNote(record.getOwnerId(), record.getServerId()).execute().body();
-                if (!response.getStatus().equals("ok")) {
-                    throw new RuntimeException();
-                }
-            } catch (Exception e) {
-                addToCache(record, STATUS_DELETED);
-                e.printStackTrace();
-            }
-        } else {
-            addToCache(record, STATUS_DELETED);
-        }
-    }
-
     public void save(ColorRecord record) {
+        Log.d(TAG, "Save: " + record.toString());
         if (NetworkUtils.isConnected()) {
             try {
                 NoteServiceResponse response = service.saveNote(record.getOwnerId(), record.getServerId(), record).execute().body();
-                if (!response.getStatus().equals("ok")) {
+                if (response.getStatus().equals("ok")) {
+                    removeIfExists(record);
+                } else {
                     throw new RuntimeException();
                 }
             } catch (Exception e) {
@@ -102,33 +103,79 @@ public class NoteSynchronizer {
         }
     }
 
+    public void delete(ColorRecord record) {
+        Log.d(TAG, "Delete: " + record.toString());
+        if (NetworkUtils.isConnected()) {
+            try {
+                NoteServiceResponse response = service.deleteNote(record.getOwnerId(), record.getServerId()).execute().body();
+                if (response.getStatus().equals("ok")) {
+                    removeIfExists(record);
+                } else {
+                    throw new RuntimeException();
+                }
+            } catch (Exception e) {
+                addToCache(record, STATUS_DELETED);
+                e.printStackTrace();
+            }
+        } else {
+            addToCache(record, STATUS_DELETED);
+        }
+    }
+
     public void clearCache() {
         setUnsynchronizedNotes(null);
     }
 
+
     private void addToCache(ColorRecord record, String status) {
-        UnsynchronizedNotes notes = getUnsynchronizedNotes();
+        Log.d(TAG, "Caching: " + status + " - " + record.toString());
         switch (status) {
             case STATUS_ADDED: {
-                notes.added.put(record.getId(), record);
+                unsynchronizedNotes.added.put(record.getId(), record);
                 break;
             }
             case STATUS_EDITED: {
-                if (notes.added.containsKey(record.getId())) {
-                    notes.added.put(record.getId(), record);
-                } else notes.edited.put(record.getId(), record);
+                if (unsynchronizedNotes.added.containsKey(record.getId())) {
+                    unsynchronizedNotes.added.put(record.getId(), record);
+                } else unsynchronizedNotes.edited.put(record.getServerId(), record);
                 break;
             }
             case STATUS_DELETED: {
-                if (notes.added.containsKey(record.getId()))
-                    notes.added.remove(record.getId());
-                if (notes.edited.containsKey(record.getId()))
-                    notes.edited.remove(record.getId());
-                notes.deleted.put(record.getId(), record);
+                if (unsynchronizedNotes.added.containsKey(record.getId()))
+                    unsynchronizedNotes.added.remove(record.getId());
+                else if (unsynchronizedNotes.edited.containsKey(record.getServerId()))
+                    unsynchronizedNotes.edited.remove(record.getServerId());
+                else unsynchronizedNotes.deleted.put(record.getServerId(), record);
                 break;
             }
         }
-        setUnsynchronizedNotes(notes);
+        writeToDisk();
+        readFromDisk();
+    }
+
+    private void removeIfExists(ColorRecord note) {
+        unsynchronizedNotes.added.remove(note.getId());
+        unsynchronizedNotes.edited.remove(note.getServerId());
+        unsynchronizedNotes.deleted.remove(note.getServerId());
+    }
+
+    void readFromDisk() {
+        try (FileReader reader = new FileReader(unsynchronizedNotesPath)) {
+            UnsynchronizedNotes newUnsynchronizedNotes =
+                    SerializationUtils.GSON.fromJson(reader, UnsynchronizedNotes.class);
+            this.unsynchronizedNotes = newUnsynchronizedNotes == null ? new UnsynchronizedNotes() : newUnsynchronizedNotes;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void writeToDisk() {
+        try (FileWriter writer = new FileWriter(unsynchronizedNotesPath)) {
+            SerializationUtils.GSON.toJson(unsynchronizedNotes, writer);
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private UnsynchronizedNotes getUnsynchronizedNotes() {
@@ -145,12 +192,11 @@ public class NoteSynchronizer {
     }
 
     private void setUnsynchronizedNotes(UnsynchronizedNotes unsynchronizedNotes) {
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(unsynchronizedNotesPath);
+        try (FileWriter writer = new FileWriter(unsynchronizedNotesPath)) {
+            SerializationUtils.GSON.toJson(unsynchronizedNotes, writer);
+            writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        SerializationUtils.GSON.toJson(unsynchronizedNotes, writer);
     }
 }

@@ -65,7 +65,6 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
 
     private NoteService noteService;
     private NoteSynchronizer synchronizer;
-    private BroadcastReceiver connectivityReceiver;
     private BroadcastReceiver syncConflictReceiver;
 
     @Override
@@ -82,6 +81,7 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
             }
         };
         noteService = ServiceGenerator.createService(NoteService.class);
+        synchronizer = NoteSynchronizer.getInstance();
 
         initDrawer(toolbar);
 
@@ -170,8 +170,12 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
     }
 
     private void syncNotes(int userId) {
-        Toast.makeText(this, "Synchronization started", Toast.LENGTH_SHORT).show();
-        NoteSynchronizationService.startNoteSynchronizer(this, userId);
+        if (NetworkUtils.isConnected()) {
+            Toast.makeText(this, "Synchronization started", Toast.LENGTH_SHORT).show();
+            NoteSynchronizationService.startNoteSynchronizer(this, userId);
+        } else {
+            Toast.makeText(this, "No connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showColorEditActivity(int colorId, int userId) {
@@ -224,6 +228,7 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
             }
             case R.id.action_delete_all: {
                 colorDao.deleteColors();
+                synchronizer.clearCache();
                 loadColors();
                 return true;
             }
