@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".colors.ColorsActivity"
+            android:name=".notes.NotesActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
@@ -26,19 +26,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".color_edit.ColorEditActivity"
-            android:parentActivityName=".colors.ColorsActivity" />
+            android:name=".note_edit.NoteEditActivity"
+            android:parentActivityName=".notes.NotesActivity" />
         <activity
-            android:name=".color_import_export.ColorImportExportActivity"
-            android:label="@string/title_activity_color_import_export"
-            android:parentActivityName=".colors.ColorsActivity" />
+            android:name=".note_import_export.NoteImportExportActivity"
+            android:label="@string/title_activity_note_import_export"
+            android:parentActivityName=".notes.NotesActivity" />
 
         <service
-            android:name=".colors.synchronizer.NoteSynchronizationService"
+            android:name=".notes.synchronizer.NoteSynchronizationService"
             android:exported="false" />
 
         <receiver
-            android:name=".colors.ColorsActivity$NetworkBroadcastReceiver"
+            android:name=".notes.NotesActivity$NetworkBroadcastReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

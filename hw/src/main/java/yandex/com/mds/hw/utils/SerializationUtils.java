@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
-import yandex.com.mds.hw.models.ColorRecord;
+import yandex.com.mds.hw.models.Note;
 
 public class SerializationUtils {
     public static final Gson GSON = new GsonBuilder()
@@ -33,18 +33,18 @@ public class SerializationUtils {
             .excludeFieldsWithModifiers(Modifier.STATIC)
             .registerTypeAdapter(String.class, new StringAdapter())
             .setDateFormat(TimeUtils.IsoDateFormat.toPattern())
-            .registerTypeAdapter(new TypeToken<ColorRecord>() {
+            .registerTypeAdapter(new TypeToken<Note>() {
             }.getType(), new NoteSerializer())
-            .registerTypeAdapter(ColorRecord.class, new NoteDeserializer())
+            .registerTypeAdapter(Note.class, new NoteDeserializer())
             .create();
 
-    private static class NoteDeserializer implements JsonDeserializer<ColorRecord> {
+    private static class NoteDeserializer implements JsonDeserializer<Note> {
 
         @Override
-        public ColorRecord deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Note deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonElement element = json.getAsJsonObject().remove("color");
             String color = element.getAsString();
-            ColorRecord record = GSON.fromJson(json, ColorRecord.class);
+            Note record = GSON.fromJson(json, Note.class);
             try {
                 record.setColor(Color.parseColor(color));
             } catch (IllegalArgumentException e) {
@@ -54,10 +54,10 @@ public class SerializationUtils {
         }
     }
 
-    private static class NoteSerializer implements JsonSerializer<ColorRecord> {
+    private static class NoteSerializer implements JsonSerializer<Note> {
 
         @Override
-        public JsonElement serialize(ColorRecord src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(Note src, Type typeOfSrc, JsonSerializationContext context) {
             JsonElement element = GSON.toJsonTree(src);
             element.getAsJsonObject().remove("color");
             element.getAsJsonObject().addProperty("color", "#" + Integer.toHexString(src.getColor()));

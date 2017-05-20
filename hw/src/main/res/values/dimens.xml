@@ -16,7 +16,7 @@
     <dimen name="circle_color_margin">16dp</dimen>
     <dimen name="list_item_margin_end">16dp</dimen>
     <dimen name="list_item_margin_start">72dp</dimen>
-    <!--ColorRecord activity dimensions-->
+    <!--Note activity dimensions-->
     <dimen name="edit_color_width">80dp</dimen>
     <dimen name="edit_color_height">80dp</dimen>
     <dimen name="edit_color_margin">16dp</dimen>
