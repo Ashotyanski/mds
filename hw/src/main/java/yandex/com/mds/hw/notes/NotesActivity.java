@@ -51,7 +51,7 @@ import yandex.com.mds.hw.utils.NetworkUtils;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_CONFLICT_NOTES;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_ILLEGAL_FORMAT;
 
-public class NotesActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class NotesActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SyncConflictFragment.OnAllConflictsResolvedListener {
     private static final String TAG = NotesActivity.class.getName();
     public static final int NOTE_EDIT_REQUEST_CODE = 1;
     public static final int NOTE_IMPORT_EXPORT_REQUEST_CODE = 2;
@@ -305,6 +305,11 @@ public class NotesActivity extends AppCompatActivity implements NavigationView.O
     static void setCurrentUserId(Context context, int id) {
         SharedPreferences preferences = context.getSharedPreferences("USER", MODE_PRIVATE);
         preferences.edit().putInt("USER_ID", id).apply();
+    }
+
+    @Override
+    public void onAllConflictsResolved() {
+        loadColors();
     }
 
 

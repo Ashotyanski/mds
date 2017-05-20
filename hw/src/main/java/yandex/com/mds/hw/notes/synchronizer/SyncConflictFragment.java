@@ -31,6 +31,8 @@ public class SyncConflictFragment extends DialogFragment {
     private NoteDao noteDao;
     private NoteSynchronizer synchronizer;
 
+    private OnAllConflictsResolvedListener conflictsResolvedListener;
+
     public SyncConflictFragment() {
     }
 
@@ -94,13 +96,24 @@ public class SyncConflictFragment extends DialogFragment {
                                 synchronizer.saveAsync(conflictNotes.getLocal());
                             }
                         }
-                        if (listView.getAdapter().isEmpty())
+                        if (listView.getAdapter().isEmpty()) {
+                            conflictsResolvedListener.onAllConflictsResolved();
                             dismiss();
+                        }
                     }
                 });
                 dialog.show();
             }
         });
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnAllConflictsResolvedListener)
+            conflictsResolvedListener = (OnAllConflictsResolvedListener) context;
+        else
+            throw new RuntimeException("Context must implement " + OnAllConflictsResolvedListener.class.getName());
     }
 
     private static class ConflictNotesAdapter extends ArrayAdapter<ConflictNotes> {
@@ -148,5 +161,9 @@ public class SyncConflictFragment extends DialogFragment {
                 colorView = (ColorView) view.findViewById(R.id.color);
             }
         }
+    }
+
+    public interface OnAllConflictsResolvedListener {
+        void onAllConflictsResolved();
     }
 }
