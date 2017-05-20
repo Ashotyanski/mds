@@ -127,17 +127,43 @@ public class NoteSynchronizationService extends IntentService {
     }
 
     private boolean isSame(Note local, Note remote) {
-        try {
-            return (local.getColor() == remote.getColor() &&
-                    local.getTitle().equals(remote.getTitle()) &&
-                    local.getDescription().equals(remote.getDescription()) &&
-                    TimeUtils.trimMilliseconds(local.getCreationDate()).getTime()
-                            == TimeUtils.trimMilliseconds(remote.getCreationDate()).getTime() &&
-                    TimeUtils.trimMilliseconds(local.getLastModificationDate()).getTime()
-                            == TimeUtils.trimMilliseconds(remote.getLastModificationDate()).getTime() &&
-                    local.getImageUrl().equals(remote.getImageUrl()));
-        } catch (NullPointerException e) {
+        //color
+        if (local.getColor() != remote.getColor())
             return false;
-        }
+        //title
+        local.setTitle(local.getTitle() == null ? "" : local.getTitle());
+        remote.setTitle(remote.getTitle() == null ? "" : remote.getTitle());
+        if (!local.getTitle().equals(remote.getTitle()))
+            return false;
+        //description
+        local.setDescription(local.getDescription() == null ? "" : local.getDescription());
+        remote.setDescription(remote.getDescription() == null ? "" : remote.getDescription());
+        if (!local.getDescription().equals(remote.getDescription()))
+            return false;
+        //image
+        local.setImageUrl(local.getImageUrl() == null ? "" : local.getImageUrl());
+        remote.setImageUrl(remote.getImageUrl() == null ? "" : remote.getImageUrl());
+        if (!local.getImageUrl().equals(remote.getImageUrl()))
+            return false;
+        //creation date
+        if (local.getCreationDate() == null ^ remote.getCreationDate() == null)
+            return false;
+        if (local.getCreationDate() == null && remote.getCreationDate() == null)
+            return false;
+        if ((local.getCreationDate() != null && remote.getCreationDate() != null) &&
+                TimeUtils.trimMilliseconds(local.getCreationDate()).getTime()
+                        != TimeUtils.trimMilliseconds(remote.getCreationDate()).getTime())
+            return false;
+
+        //last modification date
+        if (local.getLastModificationDate() == null ^ remote.getLastModificationDate() == null)
+            return false;
+        if (local.getLastModificationDate() == null && remote.getLastModificationDate() == null)
+            return false;
+        if ((local.getLastModificationDate() != null && remote.getLastModificationDate() != null) &&
+                TimeUtils.trimMilliseconds(local.getLastModificationDate()).getTime()
+                        != TimeUtils.trimMilliseconds(remote.getLastModificationDate()).getTime())
+            return false;
+        return true;
     }
 }

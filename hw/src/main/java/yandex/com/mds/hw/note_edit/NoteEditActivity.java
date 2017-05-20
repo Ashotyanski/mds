@@ -161,7 +161,7 @@ public class NoteEditActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_color, menu);
+        getMenuInflater().inflate(R.menu.menu_note_edit, menu);
         return true;
     }
 
