@@ -39,7 +39,7 @@ public class ColorDaoImpl implements ColorDao {
 
     @Override
     public ColorRecord[] getColors(Query query, int userId) {
-        Cursor c = getColorsCursor(query, -1);
+        Cursor c = getColorsCursor(query, userId);
         ColorRecord[] records = toRecords(c);
         c.close();
         return records;

@@ -19,7 +19,7 @@ public class ColorListAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View v = LayoutInflater.from(context).inflate(R.layout.list_item, parent, false);
+        View v = LayoutInflater.from(context).inflate(R.layout.list_item_note, parent, false);
         ViewHolder holder = new ViewHolder(v);
         int id = cursor.getInt(cursor.getColumnIndex(ColorDatabaseHelper.ColorEntry._ID));
         holder.setId(id);

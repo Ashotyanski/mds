@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:conflictNotes="@+conflictNotes/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -19,7 +19,7 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/title"
+            android:conflictNotes="@+conflictNotes/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Two-line item"
@@ -27,7 +27,7 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/description"
+            android:conflictNotes="@+conflictNotes/description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Secondary text"

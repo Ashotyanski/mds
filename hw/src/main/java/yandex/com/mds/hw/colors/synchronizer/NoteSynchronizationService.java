@@ -4,12 +4,13 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.util.SparseArray;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
@@ -17,11 +18,15 @@ import yandex.com.mds.hw.models.ColorRecord;
 import yandex.com.mds.hw.network.NoteService;
 import yandex.com.mds.hw.network.NoteServiceResponse;
 import yandex.com.mds.hw.network.ServiceGenerator;
+import yandex.com.mds.hw.utils.TimeUtils;
 
 public class NoteSynchronizationService extends IntentService {
     private static final String TAG = NoteSynchronizationService.class.getName();
-    private static final String ACTION_SYNC_NOTES = "com.yandex.mds.SYNC_NOTES";
     private static final String KEY_USER_ID = "USER_ID";
+
+    public static final String KEY_CONFLICT_NOTES = "CONFLICT_NOTES";
+    public static final String KEY_ILLEGAL_FORMAT = "ILLEGAL_FORMAT";
+
     private NoteService noteService;
     private NoteSynchronizer synchronizer;
     private ColorDao colorDao;
@@ -52,12 +57,18 @@ public class NoteSynchronizationService extends IntentService {
                 remoteNotes = response.getData();
             Log.d(TAG, "onHandleIntent: " + response);
         } catch (Exception e) {
-            Log.d(TAG, "onHandleIntent: Exception");
+            Log.d(TAG, "Exception while parsing response");
             e.printStackTrace();
-            stopForeground(true);
-            stopSelf();
+            Intent conflictNotesIntent = new Intent(NoteSynchronizer.SYNC_COMPLETE_ACTION);
+            conflictNotesIntent.putExtra(KEY_ILLEGAL_FORMAT, true);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(conflictNotesIntent));
+            return;
         }
-        Map<ColorRecord, ColorRecord> conflictNotes = new HashMap<>();
+        ArrayList<ConflictNotes> conflictNotes = new ArrayList<>();
+        SparseArray<ColorRecord> diff = new SparseArray<>();
+        for (ColorRecord record : colorDao.getColors(null, userId))
+            if (record.getServerId() > 0)
+                diff.put(record.getServerId(), record);
 
         for (Iterator<ColorRecord> it = remoteNotes.iterator(); it.hasNext(); ) {
             ColorRecord remoteNote = it.next();
@@ -74,7 +85,7 @@ public class NoteSynchronizationService extends IntentService {
                     synchronizer.save(note);
                 } else if (remoteNote.getLastModificationDate().getTime() > note.getLastModificationDate().getTime()) {
                     Log.d(TAG, "Conflicting notes:\n" + note.toString() + "\n" + remoteNote.toString());
-                    conflictNotes.put(note, remoteNote);
+                    conflictNotes.add(new ConflictNotes(note, remoteNote));
                 } else {
                     Log.d(TAG, "Already deleted");
                     unsynchronizedNotes.edited.remove(remoteNote.getId());
@@ -82,18 +93,51 @@ public class NoteSynchronizationService extends IntentService {
             } else if (synchronizer.findNoteByServerId(userId, remoteNote.getId()) == null) {
                 remoteNote.setOwnerId(userId);
                 remoteNote.setServerId(remoteNote.getId());
-                Log.d(TAG, "Adding new color: " + remoteNote.toString());
+                Log.d(TAG, "Adding new note: " + remoteNote.toString());
                 colorDao.addColor(remoteNote);
             } else {
-                Log.d(TAG, "Color is synchronized already");
+                ColorRecord localPairNote = diff.get(remoteNote.getId());
+                if (isSame(localPairNote, remoteNote))
+                    Log.d(TAG, "Note is synchronized already");
+                else {
+                    Log.d(TAG, "Changed on remote, conflict");
+                    conflictNotes.add(new ConflictNotes(localPairNote, remoteNote));
+                }
             }
+            diff.remove(remoteNote.getId());
         }
-        if (!conflictNotes.isEmpty())
-            sendBroadcast(new Intent(NoteSynchronizer.SYNC_CONFLICT_ACTION));
 
+        // send added notes
         for (ColorRecord note : unsynchronizedNotes.added.values()) {
-            Log.d(TAG, "Sending color: " + note.toString());
+            Log.d(TAG, "Sending note: " + note.toString());
             synchronizer.add(note);
+        }
+
+        // locally present but not represented at remote - we consider them deleted at remote
+        // and thereby conflicting (these include both edited and already synchronized)
+        for (int i = 0; i < diff.size(); i++) {
+            conflictNotes.add(new ConflictNotes(diff.valueAt(i), null));
+        }
+
+        Intent conflictNotesIntent = new Intent(NoteSynchronizer.SYNC_COMPLETE_ACTION);
+        if (!conflictNotes.isEmpty()) {
+            conflictNotesIntent.putParcelableArrayListExtra(KEY_CONFLICT_NOTES, conflictNotes);
+        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(conflictNotesIntent));
+    }
+
+    private boolean isSame(ColorRecord local, ColorRecord remote) {
+        try {
+            return (local.getColor() == remote.getColor() &&
+                    local.getTitle().equals(remote.getTitle()) &&
+                    local.getDescription().equals(remote.getDescription()) &&
+                    TimeUtils.trimMilliseconds(local.getCreationDate()).getTime()
+                            == TimeUtils.trimMilliseconds(remote.getCreationDate()).getTime() &&
+                    TimeUtils.trimMilliseconds(local.getLastModificationDate()).getTime()
+                            == TimeUtils.trimMilliseconds(remote.getLastModificationDate()).getTime() &&
+                    local.getImageUrl().equals(remote.getImageUrl()));
+        } catch (NullPointerException e) {
+            return false;
         }
     }
 }

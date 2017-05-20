@@ -30,7 +30,7 @@ public class ColorPickerDialog extends AlertDialog {
     public ColorPickerDialog(@NonNull Context context, @StyleRes int themeResId, int color, OnColorSavedListener colorSavedListener) {
         super(context, themeResId);
         mColorSavedListener = colorSavedListener;
-        View root = LayoutInflater.from(getContext()).inflate(R.layout.fragment_color_picker_dialog, null);
+        View root = LayoutInflater.from(getContext()).inflate(R.layout.dialog_color_picker, null);
         setView(root);
         colorPickerView = (ColorPickerView) root.findViewById(R.id.color_picker_view);
         resultColor = (ColorView) root.findViewById(R.id.color_view);

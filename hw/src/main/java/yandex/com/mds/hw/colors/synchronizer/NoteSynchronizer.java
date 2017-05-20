@@ -8,6 +8,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import yandex.com.mds.hw.MainApplication;
 import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
@@ -20,7 +23,7 @@ import yandex.com.mds.hw.utils.SerializationUtils;
 
 public class NoteSynchronizer {
     private static final String TAG = NoteSynchronizer.class.getName();
-    public static final String SYNC_CONFLICT_ACTION = "SYNC_CONFLICT";
+    public static final String SYNC_COMPLETE_ACTION = "SYNC_COMPLETE";
     private static final String STATUS_ADDED = "added";
     private static final String STATUS_EDITED = "edited";
     private static final String STATUS_DELETED = "deleted";
@@ -65,6 +68,30 @@ public class NoteSynchronizer {
         return unsynchronizedNotes.extractUnsynchronizedNotesForOwner(ownerId);
     }
 
+    public void addAsync(final ColorRecord record) {
+        Log.d(TAG, "Add async: " + record.toString());
+        if (NetworkUtils.isConnected()) {
+            service.addNote(record.getOwnerId(), record).enqueue(new Callback<NoteServiceResponse<Integer>>() {
+                @Override
+                public void onResponse(Call<NoteServiceResponse<Integer>> call, Response<NoteServiceResponse<Integer>> response) {
+                    if (response.body() != null && response.body().getStatus().equals("ok")) {
+                        record.setServerId(response.body().getData());
+                        colorDao.saveColor(record);
+                        removeIfExists(record);
+                    } else
+                        addToCache(record, STATUS_ADDED);
+                }
+
+                @Override
+                public void onFailure(Call<NoteServiceResponse<Integer>> call, Throwable t) {
+                    addToCache(record, STATUS_ADDED);
+                }
+            });
+        } else {
+            addToCache(record, STATUS_ADDED);
+        }
+    }
+
     public void add(ColorRecord record) {
         Log.d(TAG, "Add: " + record.toString());
         if (NetworkUtils.isConnected()) {
@@ -84,6 +111,28 @@ public class NoteSynchronizer {
         }
     }
 
+    public void saveAsync(final ColorRecord record) {
+        Log.d(TAG, "Save async: " + record.toString());
+        if (NetworkUtils.isConnected()) {
+            service.saveNote(record.getOwnerId(), record.getServerId(), record).enqueue(new Callback<NoteServiceResponse>() {
+                @Override
+                public void onResponse(Call<NoteServiceResponse> call, Response<NoteServiceResponse> response) {
+                    if (response.body() != null && response.body().getStatus().equals("ok"))
+                        removeIfExists(record);
+                    else
+                        addToCache(record, STATUS_EDITED);
+                }
+
+                @Override
+                public void onFailure(Call<NoteServiceResponse> call, Throwable t) {
+                    addToCache(record, STATUS_EDITED);
+                }
+            });
+        } else {
+            addToCache(record, STATUS_EDITED);
+        }
+    }
+
     public void save(ColorRecord record) {
         Log.d(TAG, "Save: " + record.toString());
         if (NetworkUtils.isConnected()) {
@@ -100,6 +149,28 @@ public class NoteSynchronizer {
             }
         } else {
             addToCache(record, STATUS_EDITED);
+        }
+    }
+
+    public void deleteAsync(final ColorRecord record) {
+        Log.d(TAG, "Delete async: " + record.toString());
+        if (NetworkUtils.isConnected()) {
+            service.deleteNote(record.getOwnerId(), record.getServerId()).enqueue(new Callback<NoteServiceResponse>() {
+                @Override
+                public void onResponse(Call<NoteServiceResponse> call, Response<NoteServiceResponse> response) {
+                    if (response.body() != null && response.body().getStatus().equals("ok"))
+                        removeIfExists(record);
+                    else
+                        addToCache(record, STATUS_DELETED);
+                }
+
+                @Override
+                public void onFailure(Call<NoteServiceResponse> call, Throwable t) {
+                    addToCache(record, STATUS_DELETED);
+                }
+            });
+        } else {
+            addToCache(record, STATUS_DELETED);
         }
     }
 

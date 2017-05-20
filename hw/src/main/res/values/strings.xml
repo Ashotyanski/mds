@@ -49,4 +49,11 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="manage_notes">Manage notes</string>
+
+    <string name="sync_conflict_message">Conflict occurred while synchronizing notes</string>
+    <string name="sync_conflict_action_resolve">Resolve</string>
+    <string name="sync_format_illegal">Remote notes format is invalid</string>
+
+    <string name="button_prefer_remote">Prefer remote</string>
+    <string name="button_prefer_local">Prefer local</string>
 </resources>

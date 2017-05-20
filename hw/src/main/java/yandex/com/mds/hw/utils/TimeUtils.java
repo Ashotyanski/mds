@@ -43,4 +43,10 @@ public class TimeUtils {
             throw new RuntimeException();
         }
     }
+
+    public static Date trimMilliseconds(Date date) {
+        long millis = date.getTime();
+        long truncatedMillis = 1000 * (millis / 1000);
+        return new Date(truncatedMillis);
+    }
 }

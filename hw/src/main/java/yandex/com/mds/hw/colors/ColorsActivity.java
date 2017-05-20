@@ -11,9 +11,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -38,13 +40,18 @@ import yandex.com.mds.hw.color_edit.ColorEditActivity;
 import yandex.com.mds.hw.color_import_export.ColorImportExportActivity;
 import yandex.com.mds.hw.colors.query.Query;
 import yandex.com.mds.hw.colors.query.presenters.QueryPresenter;
+import yandex.com.mds.hw.colors.synchronizer.ConflictNotes;
 import yandex.com.mds.hw.colors.synchronizer.NoteSynchronizationService;
 import yandex.com.mds.hw.colors.synchronizer.NoteSynchronizer;
+import yandex.com.mds.hw.colors.synchronizer.SyncConflictFragment;
 import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
 import yandex.com.mds.hw.network.NoteService;
 import yandex.com.mds.hw.network.ServiceGenerator;
 import yandex.com.mds.hw.utils.NetworkUtils;
+
+import static yandex.com.mds.hw.colors.synchronizer.NoteSynchronizationService.KEY_CONFLICT_NOTES;
+import static yandex.com.mds.hw.colors.synchronizer.NoteSynchronizationService.KEY_ILLEGAL_FORMAT;
 
 public class ColorsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = ColorsActivity.class.getName();
@@ -65,19 +72,42 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
 
     private NoteService noteService;
     private NoteSynchronizer synchronizer;
-    private BroadcastReceiver syncConflictReceiver;
+    private BroadcastReceiver syncCompleteReceiver;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        syncConflictReceiver = new BroadcastReceiver() {
+        syncCompleteReceiver = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                Toast.makeText(context, "Conflict", Toast.LENGTH_SHORT).show();
+            public void onReceive(Context context, final Intent intent) {
+                final Bundle extras = intent.getExtras();
+                if (extras != null) {
+                    if (extras.getBoolean(KEY_ILLEGAL_FORMAT)) {
+                        Snackbar.make(listView, R.string.sync_format_illegal, Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (extras.<ConflictNotes>getParcelableArrayList(KEY_CONFLICT_NOTES) != null) {
+                        Snackbar snack = Snackbar.make(listView, R.string.sync_conflict_message, Snackbar.LENGTH_INDEFINITE);
+                        snack.setAction(R.string.sync_conflict_action_resolve, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        ColorsActivity.this.getSupportFragmentManager()
+                                                .beginTransaction()
+                                                .add(SyncConflictFragment.newInstance(
+                                                        extras.<ConflictNotes>getParcelableArrayList(KEY_CONFLICT_NOTES)), "CONFLICT"
+                                                )
+                                                .commit();
+                                    }
+                                }
+                        );
+                        snack.show();
+                    }
+                }
+                loadColors();
             }
         };
         noteService = ServiceGenerator.createService(NoteService.class);
@@ -155,13 +185,13 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(syncConflictReceiver, new IntentFilter(NoteSynchronizer.SYNC_CONFLICT_ACTION));
+        LocalBroadcastManager.getInstance(this).registerReceiver(syncCompleteReceiver, new IntentFilter(NoteSynchronizer.SYNC_COMPLETE_ACTION));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(syncConflictReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(syncCompleteReceiver);
     }
 
     private void switchUser(int userId) {
@@ -227,7 +257,7 @@ public class ColorsActivity extends AppCompatActivity implements NavigationView.
                 return true;
             }
             case R.id.action_delete_all: {
-                colorDao.deleteColors();
+//                colorDao.deleteColors();
                 synchronizer.clearCache();
                 loadColors();
                 return true;
