@@ -7,7 +7,6 @@ import android.os.Message;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.concurrent.ExecutorService;
@@ -95,7 +94,7 @@ public class ColorImporterExporter {
                 colorDao.deleteColors();
                 colorDao.addColors(records);
                 mHandler.obtainMessage(IMPORT_FLAG, SUCCESS_FLAG).sendToTarget();
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 mHandler.obtainMessage(IMPORT_FLAG, FAIL_FLAG).sendToTarget();
             }
