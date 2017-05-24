@@ -6,10 +6,13 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -91,7 +94,8 @@ public class NoteImporterExporter {
             try {
                 Log.d(TAG, "Reading data from " + importFile);
                 FileReader reader = new FileReader(importFile);
-                Note[] records = GSON.fromJson(reader, Note[].class);
+                List<Note> records = GSON.fromJson(reader, new TypeToken<List<Note>>() {
+                }.getType());
                 noteDao.deleteNotes();
                 noteDao.addNotes(records);
                 mHandler.obtainMessage(IMPORT_FLAG, SUCCESS_FLAG).sendToTarget();
@@ -112,7 +116,7 @@ public class NoteImporterExporter {
         @Override
         public void run() {
             try {
-                Note[] records = noteDao.getNotes();
+                List<Note> records = noteDao.getNotes();
                 File exportFile = new File(context.getExternalFilesDir(null), filename);
                 Log.d(TAG, "Writing data to " + exportFile);
                 if (!exportFile.exists()) {

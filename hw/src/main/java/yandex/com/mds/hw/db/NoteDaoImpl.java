@@ -4,16 +4,18 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import yandex.com.mds.hw.MainApplication;
+import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.notes.query.Query;
 import yandex.com.mds.hw.notes.query.Utils;
 import yandex.com.mds.hw.notes.query.clauses.DateFilter;
 import yandex.com.mds.hw.notes.query.clauses.DateIntervalFilter;
 import yandex.com.mds.hw.notes.query.clauses.Sort;
-import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.utils.ArrayUtils;
 import yandex.com.mds.hw.utils.TimeUtils;
 
@@ -33,14 +35,14 @@ public class NoteDaoImpl implements NoteDao {
     private NoteDatabaseHelper dbHelper = NoteDatabaseHelper.getInstance(MainApplication.getContext());
 
     @Override
-    public Note[] getNotes() {
+    public List<Note> getNotes() {
         return getNotes(null, -1);
     }
 
     @Override
-    public Note[] getNotes(Query query, int userId) {
+    public List<Note> getNotes(Query query, int userId) {
         Cursor c = getNotesCursor(query, userId);
-        Note[] records = toRecords(c);
+        List<Note> records = toRecords(c);
         c.close();
         return records;
     }
@@ -127,7 +129,7 @@ public class NoteDaoImpl implements NoteDao {
     }
 
     @Override
-    public boolean addNotes(Note[] records) {
+    public boolean addNotes(List<Note> records) {
         boolean isAddedWithoutErrors = true;
         for (Note record : records) {
             if (addNote(record) > -1)
@@ -199,13 +201,11 @@ public class NoteDaoImpl implements NoteDao {
         return note;
     }
 
-    private Note[] toRecords(Cursor cursor) {
-        Note[] note = new Note[cursor.getCount()];
-        int i = 0;
+    private List<Note> toRecords(Cursor cursor) {
+        List<Note> notes = new ArrayList<>(cursor.getCount());
         while (cursor.moveToNext()) {
-            note[i] = toRecord(cursor);
-            i++;
+            notes.add(toRecord(cursor));
         }
-        return note;
+        return notes;
     }
 }

@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.note_edit;
+package yandex.com.mds.hw.note_edit.tasks;
 
 import android.os.AsyncTask;
 

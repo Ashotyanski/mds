@@ -2,13 +2,15 @@ package yandex.com.mds.hw.db;
 
 import android.database.Cursor;
 
+import java.util.List;
+
 import yandex.com.mds.hw.notes.query.Query;
 import yandex.com.mds.hw.models.Note;
 
 public interface NoteDao {
-    Note[] getNotes();
+    List<Note> getNotes();
 
-    Note[] getNotes(Query query, int userId);
+    List<Note> getNotes(Query query, int userId);
 
     Cursor getNotesCursor();
 
@@ -18,7 +20,7 @@ public interface NoteDao {
 
     long addNote(Note record);
 
-    boolean addNotes(Note[] records);
+    boolean addNotes(List<Note> records);
 
     boolean saveNote(Note record);
 

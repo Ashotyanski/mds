@@ -1,0 +1,260 @@
+package yandex.com.mds.hw.notes;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import yandex.com.mds.hw.MainActivity;
+import yandex.com.mds.hw.R;
+import yandex.com.mds.hw.db.NoteDao;
+import yandex.com.mds.hw.db.NoteDaoImpl;
+import yandex.com.mds.hw.models.Note;
+import yandex.com.mds.hw.notes.query.Query;
+import yandex.com.mds.hw.notes.query.presenters.QueryPresenter;
+import yandex.com.mds.hw.notes.synchronizer.ConflictNotes;
+import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
+import yandex.com.mds.hw.notes.synchronizer.SyncConflictFragment;
+
+import static android.app.Activity.RESULT_OK;
+import static android.content.Context.MODE_PRIVATE;
+import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_CONFLICT_NOTES;
+import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_ILLEGAL_FORMAT;
+
+public class NotesFragment extends Fragment {
+    private static final String TAG = NotesFragment.class.getName();
+    private static final String PREFERENCES_USER = "USER";
+    private static final String QUERY_BUNDLE_KEY = "query";
+    private static final String USER_ID_BUNDLE_KEY = "user_id";
+
+    public static final int NOTE_IMPORT_EXPORT_REQUEST_CODE = 2;
+    public static final int NOTE_EDIT_REQUEST_CODE = 1;
+
+    private RecyclerView list;
+    private QueryPresenter queryPresenter;
+    private NoteLoader noteLoader;
+
+    private NoteDao noteDao = new NoteDaoImpl();
+    private BroadcastReceiver syncCompleteReceiver;
+    private View view;
+
+    public NotesFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.content_notes, null);
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                //&& !drawer.isDrawerOpen(GravityCompat.START)
+                if (queryPresenter.isShown() && !queryPresenter.isTouched(event.getX(), event.getY())) {
+                    queryPresenter.close();
+                    return true;
+                }
+                return v.onTouchEvent(event);
+            }
+        });
+        ActionBar toolbar = ((MainActivity) getActivity()).getSupportActionBar();
+        toolbar.setTitle("Notes");
+
+        list = (RecyclerView) view.findViewById(R.id.list);
+        list.setLayoutManager(new LinearLayoutManager(getContext()));
+        NotesRecyclerViewAdapter adapter = new NotesRecyclerViewAdapter(noteDao.getNotes());
+        adapter.setOnClickListener(new NotesRecyclerViewAdapter.OnNoteSelectedListener() {
+            @Override
+            public void onNoteSelected(NotesRecyclerViewAdapter.ViewHolder holder, Note note) {
+                View sharedView = holder.colorView;
+                editNote(holder.getAdapterPosition(), ((NotesRecyclerViewAdapter) list.getAdapter()).getNotes(), sharedView);
+            }
+        });
+        list.setAdapter(adapter);
+        syncCompleteReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, final Intent intent) {
+                final Bundle extras = intent.getExtras();
+                if (extras != null) {
+                    if (extras.getBoolean(SYNC_ILLEGAL_FORMAT)) {
+                        Snackbar.make(list, R.string.sync_format_illegal, Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (extras.<ConflictNotes>getParcelableArrayList(SYNC_CONFLICT_NOTES) != null) {
+                        Snackbar snack = Snackbar.make(list, R.string.sync_conflict_message, Snackbar.LENGTH_INDEFINITE);
+                        snack.setAction(R.string.sync_conflict_action_resolve, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        getActivity().getSupportFragmentManager()
+                                                .beginTransaction()
+                                                .add(SyncConflictFragment.newInstance(
+                                                        extras.<ConflictNotes>getParcelableArrayList(SYNC_CONFLICT_NOTES)), "CONFLICT"
+                                                )
+                                                .commit();
+                                    }
+                                }
+                        );
+                        snack.show();
+                    }
+                }
+                loadNotes();
+            }
+        };
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addNote(getCurrentUserId(getContext()));
+            }
+        });
+
+        queryPresenter = new QueryPresenter(getContext(), new QueryPresenter.OnApplyQueryListener() {
+            @Override
+            public void onApply(Query query) {
+                loadNotes(query, getCurrentUserId(getContext()));
+            }
+        }, (LinearLayout) view.findViewById(R.id.query));
+
+        loadNotes();
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(syncCompleteReceiver, new IntentFilter(NoteSynchronizer.SYNC_COMPLETE_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(syncCompleteReceiver);
+    }
+
+    private void loadNotes() {
+        loadNotes(queryPresenter.getQuery(), getCurrentUserId(getContext()));
+    }
+
+    private void loadNotes(Query query, int userId) {
+        if (noteLoader == null) noteLoader = new NoteLoader();
+        if (getActivity().getSupportLoaderManager().getLoader(1) == null)
+            getActivity().getSupportLoaderManager().initLoader(1, getColorLoaderBundle(query, userId), noteLoader).forceLoad();
+        else
+            getActivity().getSupportLoaderManager().restartLoader(1, getColorLoaderBundle(query, userId), noteLoader).forceLoad();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        queryPresenter.close();
+    }
+
+    private Bundle getColorLoaderBundle(Query query, int userId) {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(QUERY_BUNDLE_KEY, query);
+        bundle.putInt(USER_ID_BUNDLE_KEY, userId);
+        return bundle;
+    }
+
+    public static int getCurrentUserId(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES_USER, MODE_PRIVATE);
+        return preferences.getInt("USER_ID", 0);
+    }
+
+    public static void setCurrentUserId(Context context, int id) {
+        SharedPreferences preferences = context.getSharedPreferences("USER", MODE_PRIVATE);
+        preferences.edit().putInt("USER_ID", id).apply();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_filter: {
+                queryPresenter.toggle();
+                return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+//        menu.clear();
+//        getActivity().invalidateOptionsMenu();
+        inflater.inflate(R.menu.menu_colors, menu);
+        Log.d(TAG, "onCreateOptionsMenu: Menu is created");
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == NOTE_EDIT_REQUEST_CODE || requestCode == NOTE_IMPORT_EXPORT_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                loadNotes();
+            }
+        }
+    }
+
+    private void editNote(int noteId, List<Note> notes, View sharedView) {
+        ((MainActivity) getActivity()).getNavigationManager().showNotePager(noteId, (ArrayList<Note>) notes, sharedView);
+    }
+
+    private void addNote(int userId) {
+        ((MainActivity) getActivity()).getNavigationManager().showNoteAdd(-1, userId);
+    }
+
+    private class NoteLoader implements LoaderManager.LoaderCallbacks<List<Note>> {
+        @Override
+        public Loader<List<Note>> onCreateLoader(int id, final Bundle args) {
+            return new AsyncTaskLoader<List<Note>>(getContext()) {
+                @Override
+                public List<Note> loadInBackground() {
+                    Query query = args.getParcelable(QUERY_BUNDLE_KEY);
+                    int userId = args.getInt(USER_ID_BUNDLE_KEY);
+                    return noteDao.getNotes(query, userId);
+                }
+            };
+        }
+
+        @Override
+        public void onLoadFinished(Loader<List<Note>> loader, List<Note> data) {
+            ((NotesRecyclerViewAdapter) list.getAdapter()).setNotes(data);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Note>> loader) {
+
+        }
+    }
+}
