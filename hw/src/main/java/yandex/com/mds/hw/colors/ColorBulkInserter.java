@@ -127,11 +127,11 @@ class ColorBulkInserter {
     }
 
     private void generateColorRecord(ContentValues contentValues, int seed) {
-        contentValues.put(COLOR, seed);
+        contentValues.put(COLOR, -seed);
         contentValues.put(TITLE, String.valueOf(seed));
         contentValues.put(DESCRIPTION, "This is for " + String.valueOf(seed));
         contentValues.put(CREATION_DATE, new Date().getTime());
-        contentValues.put(IMAGE_URL, "https://yandex.ru/search/xml?&key=qwerty&query=" + String.valueOf(seed));
+        contentValues.put(IMAGE_URL, "https://i.ytimg.com/vi/EJqY4bUM6PY/maxresdefault.jpg");
     }
 
     public void setTotalCount(int totalCount) {
