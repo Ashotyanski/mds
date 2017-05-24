@@ -7,6 +7,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
 
+import static yandex.com.mds.hw.utils.SerializationUtils.PARCEL_EMPTY_FIELD;
+
 public class ColorRecord implements Parcelable {
     private int id;
     private int color;
@@ -109,9 +111,9 @@ public class ColorRecord implements Parcelable {
         dest.writeInt(this.color);
         dest.writeString(this.title);
         dest.writeString(this.description);
-        dest.writeLong(this.creationDate != null ? this.creationDate.getTime() : -1);
-        dest.writeLong(this.lastModificationDate != null ? this.lastModificationDate.getTime() : -1);
-        dest.writeLong(this.lastViewDate != null ? this.lastViewDate.getTime() : -1);
+        dest.writeLong(this.creationDate != null ? this.creationDate.getTime() : PARCEL_EMPTY_FIELD);
+        dest.writeLong(this.lastModificationDate != null ? this.lastModificationDate.getTime() : PARCEL_EMPTY_FIELD);
+        dest.writeLong(this.lastViewDate != null ? this.lastViewDate.getTime() : PARCEL_EMPTY_FIELD);
         dest.writeString(this.imageUrl);
     }
 
@@ -121,11 +123,11 @@ public class ColorRecord implements Parcelable {
         this.title = in.readString();
         this.description = in.readString();
         long tmpCreationDate = in.readLong();
-        this.creationDate = tmpCreationDate == -1 ? null : new Date(tmpCreationDate);
+        this.creationDate = tmpCreationDate == PARCEL_EMPTY_FIELD ? null : new Date(tmpCreationDate);
         long tmpLastModificationDate = in.readLong();
-        this.lastModificationDate = tmpLastModificationDate == -1 ? null : new Date(tmpLastModificationDate);
+        this.lastModificationDate = tmpLastModificationDate == PARCEL_EMPTY_FIELD ? null : new Date(tmpLastModificationDate);
         long tmpLastViewDate = in.readLong();
-        this.lastViewDate = tmpLastViewDate == -1 ? null : new Date(tmpLastViewDate);
+        this.lastViewDate = tmpLastViewDate == PARCEL_EMPTY_FIELD ? null : new Date(tmpLastViewDate);
         this.imageUrl = in.readString();
     }
 

@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import static yandex.com.mds.hw.utils.SerializationUtils.PARCEL_EMPTY_FIELD;
+
 public class DateIntervalFilter implements Parcelable {
     private Date from, to;
     private String field;
@@ -49,16 +51,16 @@ public class DateIntervalFilter implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(this.from != null ? this.from.getTime() : -1);
-        dest.writeLong(this.to != null ? this.to.getTime() : -1);
+        dest.writeLong(this.from != null ? this.from.getTime() : PARCEL_EMPTY_FIELD);
+        dest.writeLong(this.to != null ? this.to.getTime() : PARCEL_EMPTY_FIELD);
         dest.writeString(this.field);
     }
 
     protected DateIntervalFilter(Parcel in) {
         long tmpFrom = in.readLong();
-        this.from = tmpFrom == -1 ? null : new Date(tmpFrom);
+        this.from = tmpFrom == PARCEL_EMPTY_FIELD ? null : new Date(tmpFrom);
         long tmpTo = in.readLong();
-        this.to = tmpTo == -1 ? null : new Date(tmpTo);
+        this.to = tmpTo == PARCEL_EMPTY_FIELD ? null : new Date(tmpTo);
         this.field = in.readString();
     }
 

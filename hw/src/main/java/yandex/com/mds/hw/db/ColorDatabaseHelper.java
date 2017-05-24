@@ -2,11 +2,15 @@ package yandex.com.mds.hw.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
+import java.util.Date;
 import java.util.HashMap;
+
+import yandex.com.mds.hw.models.ColorRecord;
 
 import static android.provider.BaseColumns._ID;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.COLOR;
@@ -72,6 +76,36 @@ public class ColorDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(DELETE_QUERY);
         onCreate(db);
+    }
+
+    public static ContentValues toContentValues(ColorRecord colorRecord, boolean isUpdate) {
+        ContentValues contentValues = new ContentValues();
+        if (isUpdate)
+            contentValues.put(_ID, colorRecord.getId());
+        contentValues.put(COLOR, colorRecord.getColor());
+        contentValues.put(TITLE, colorRecord.getTitle());
+        contentValues.put(DESCRIPTION, colorRecord.getDescription());
+        if (colorRecord.getCreationDate() != null)
+            contentValues.put(CREATION_DATE, colorRecord.getCreationDate().getTime());
+        if (colorRecord.getLastModificationDate() != null)
+            contentValues.put(LAST_MODIFICATION_DATE, colorRecord.getLastModificationDate().getTime());
+        if (colorRecord.getLastViewDate() != null)
+            contentValues.put(LAST_VIEW_DATE, colorRecord.getLastViewDate().getTime());
+        contentValues.put(IMAGE_URL, colorRecord.getImageUrl());
+        return contentValues;
+    }
+
+    public static ColorRecord toRecord(Cursor cursor) {
+        ColorRecord colorRecord = new ColorRecord();
+        colorRecord.setId(cursor.getInt(cursor.getColumnIndex(_ID)));
+        colorRecord.setColor(cursor.getInt(cursor.getColumnIndex(COLOR)));
+        colorRecord.setTitle(cursor.getString(cursor.getColumnIndex(TITLE)));
+        colorRecord.setDescription(cursor.getString(cursor.getColumnIndex(DESCRIPTION)));
+        colorRecord.setCreationDate(new Date(cursor.getLong(cursor.getColumnIndex(CREATION_DATE))));
+        colorRecord.setLastModificationDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE))));
+        colorRecord.setLastViewDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE))));
+        colorRecord.setImageUrl(cursor.getString(cursor.getColumnIndex(IMAGE_URL)));
+        return colorRecord;
     }
 
     public final class ColorEntry implements BaseColumns {
