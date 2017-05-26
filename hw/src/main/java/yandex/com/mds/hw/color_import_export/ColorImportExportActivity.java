@@ -25,6 +25,8 @@ public class ColorImportExportActivity extends AppCompatActivity {
 
     public static class ColorImportExportFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
         public static final String SHARED_PREFERENCES_NAME = "colors_import_export";
+        public static final String IMPORT_EXPORT_FILE_PREFERENCE = "import_export_file";
+        public static final String DEFAULT_FILENAME = "colors.json";
         private ColorImporterExporter exporter;
         private String importExportFilename;
 
@@ -32,7 +34,7 @@ public class ColorImportExportActivity extends AppCompatActivity {
         public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
             super.onViewCreated(view, savedInstanceState);
             SharedPreferences s = getActivity().getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-            importExportFilename = s.getString("import_export_file", "colors.json");
+            importExportFilename = s.getString(IMPORT_EXPORT_FILE_PREFERENCE, DEFAULT_FILENAME);
         }
 
         @Override
