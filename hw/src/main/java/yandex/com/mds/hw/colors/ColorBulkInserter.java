@@ -117,7 +117,6 @@ class ColorBulkInserter {
                 e.printStackTrace();
             } finally {
                 db.endTransaction();
-//                db.close();
             }
             Log.d(TAG, "Transaction completed for " + from + " to " + to);
             Message completeMessage = mHandler.obtainMessage(2);

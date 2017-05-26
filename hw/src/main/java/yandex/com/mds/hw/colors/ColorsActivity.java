@@ -143,7 +143,6 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         loadColors();
-//        listView.smoothScrollToPosition(savedInstanceState.getInt(CURRENT_POSITION));
     }
 
     private void loadColors() {

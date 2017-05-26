@@ -45,27 +45,13 @@ public class ColorImportExportActivity extends AppCompatActivity {
             exporter.setExportListener(new ColorImporterExporter.OnColorsExportListener() {
                 @Override
                 public void OnColorsExport(int result) {
-                    Activity activity = getActivity();
-                    if (result == ColorImporterExporter.SUCCESS_FLAG) {
-                        if (activity != null)
-                            Toast.makeText(activity, R.string.success_colors_export, Toast.LENGTH_SHORT).show();
-                    } else {
-                        if (activity != null)
-                            Toast.makeText(activity, R.string.error_colors_export, Toast.LENGTH_SHORT).show();
-                    }
+                    showResultToast(true, result == ColorImporterExporter.SUCCESS_FLAG);
                 }
             });
             exporter.setImportListener(new ColorImporterExporter.OnColorsImportListener() {
                 @Override
                 public void OnColorsImport(int result) {
-                    Activity activity = getActivity();
-                    if (result == ColorImporterExporter.SUCCESS_FLAG) {
-                        if (activity != null)
-                            Toast.makeText(activity, R.string.success_colors_import, Toast.LENGTH_SHORT).show();
-                    } else {
-                        if (activity != null)
-                            Toast.makeText(activity, R.string.error_colors_import, Toast.LENGTH_SHORT).show();
-                    }
+                    showResultToast(false, result == ColorImporterExporter.SUCCESS_FLAG);
                 }
             });
             Preference importPref = findPreference("import_colors");
@@ -87,6 +73,18 @@ public class ColorImportExportActivity extends AppCompatActivity {
                     return true;
                 }
             });
+        }
+
+        private void showResultToast(boolean isExport, boolean isSuccess) {
+            Activity activity = getActivity();
+            if (activity != null)
+                if (isExport) {
+                    Toast.makeText(activity, isSuccess ? R.string.success_colors_export :
+                            R.string.error_colors_export, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(activity, isSuccess ? R.string.success_colors_import :
+                            R.string.error_colors_import, Toast.LENGTH_SHORT).show();
+                }
         }
 
         @Override
