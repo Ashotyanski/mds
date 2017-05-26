@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import static yandex.com.mds.hw.utils.SerializationUtils.PARCEL_EMPTY_FIELD;
+
 public class DateFilter implements Parcelable {
     private Date date;
     private String field;
@@ -54,7 +56,7 @@ public class DateFilter implements Parcelable {
 
     protected DateFilter(Parcel in) {
         long tmpDate = in.readLong();
-        this.date = tmpDate == -1 ? null : new Date(tmpDate);
+        this.date = tmpDate == PARCEL_EMPTY_FIELD ? null : new Date(tmpDate);
         this.field = in.readString();
     }
 

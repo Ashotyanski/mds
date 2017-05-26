@@ -58,9 +58,9 @@ public class DateIntervalFilter implements Parcelable {
 
     protected DateIntervalFilter(Parcel in) {
         long tmpFrom = in.readLong();
-        this.from = tmpFrom == -1 ? null : new Date(tmpFrom);
+        this.from = tmpFrom == PARCEL_EMPTY_FIELD ? null : new Date(tmpFrom);
         long tmpTo = in.readLong();
-        this.to = tmpTo == -1 ? null : new Date(tmpTo);
+        this.to = tmpTo == PARCEL_EMPTY_FIELD ? null : new Date(tmpTo);
         this.field = in.readString();
     }
 
