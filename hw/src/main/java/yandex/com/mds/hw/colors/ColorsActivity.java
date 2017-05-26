@@ -1,5 +1,7 @@
 package yandex.com.mds.hw.colors;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.color_edit.ColorEditActivity;
 import yandex.com.mds.hw.color_import_export.ColorImportExportActivity;
+import yandex.com.mds.hw.color_import_export.ColorImporterExporter;
 import yandex.com.mds.hw.colors.query.Query;
 import yandex.com.mds.hw.colors.query.presenters.QueryPresenter;
 import yandex.com.mds.hw.db.ColorDao;
@@ -40,7 +43,7 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     private ListView listView;
     private QueryPresenter presenter;
     private ColorLoaderAdapter colorLoaderAdapter;
-
+    private BroadcastReceiver importReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +80,13 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
                 loadColors();
             }
         });
+
+        importReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                loadColors();
+            }
+        };
         loadColors();
     }
 
@@ -115,6 +125,18 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(importReceiver, ColorImporterExporter.importIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(importReceiver);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_filter: {
@@ -143,7 +165,6 @@ public class ColorsActivity extends AppCompatActivity implements QueryPresenter.
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         loadColors();
-//        listView.smoothScrollToPosition(savedInstanceState.getInt(CURRENT_POSITION));
     }
 
     private void loadColors() {

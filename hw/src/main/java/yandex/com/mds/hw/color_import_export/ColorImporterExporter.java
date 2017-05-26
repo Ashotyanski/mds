@@ -1,8 +1,9 @@
 package yandex.com.mds.hw.color_import_export;
 
-import android.app.Notification;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,12 +16,10 @@ import java.io.FileWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.db.ColorDao;
 import yandex.com.mds.hw.db.ColorDaoImpl;
 import yandex.com.mds.hw.db.ColorDatabaseHelper;
 import yandex.com.mds.hw.models.ColorRecord;
-import yandex.com.mds.hw.utils.NotificationUtils;
 
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.ColorEntry.TABLE_NAME;
 import static yandex.com.mds.hw.db.ColorDatabaseHelper.toContentValues;
@@ -30,10 +29,9 @@ public class ColorImporterExporter {
     private static final String TAG = ColorImporterExporter.class.getName();
     private static final int IMPORT_FLAG = 1;
     private static final int EXPORT_FLAG = 2;
-    private static final int PROGRESS_FLAG = 3;
 
-    public static final int SUCCESS_FLAG = 1;
-    public static final int FAIL_FLAG = 2;
+    public static final String IMPORT_ACTION = "IMPORT";
+    public static final IntentFilter importIntentFilter = new IntentFilter(IMPORT_ACTION);
 
     private ColorDao colorDao;
     private ColorDatabaseHelper dbHelper;
@@ -63,14 +61,11 @@ public class ColorImporterExporter {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case IMPORT_FLAG: {
-                        importListener.OnColorsImport((Integer) msg.obj);
+                        importListener.OnColorsImport((ImportExportStatus) msg.obj);
                         break;
                     }
                     case EXPORT_FLAG: {
-                        exportListener.OnColorsExport((Integer) msg.obj);
-                        break;
-                    }
-                    case PROGRESS_FLAG: {
+                        exportListener.OnColorsExport((ImportExportStatus) msg.obj);
                         break;
                     }
                 }
@@ -97,13 +92,9 @@ public class ColorImporterExporter {
         @Override
         public void run() {
             File importFile = new File(context.getExternalFilesDir(null), filename);
-            Notification.Builder builder;
             try {
-                builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Reading colors...");
-                builder.setProgress(1, 0, false);
-                NotificationUtils.send(builder.build(), 1);
                 Log.d(TAG, "Reading data from " + importFile);
+                mHandler.obtainMessage(IMPORT_FLAG, new ImportExportStatus(.0, "Reading colors...")).sendToTarget();
                 FileReader reader = new FileReader(importFile);
                 final ColorRecord[] records = GSON.fromJson(reader, ColorRecord[].class);
 
@@ -131,17 +122,14 @@ public class ColorImporterExporter {
                                 db.endTransaction();
                             }
                             if (to != records.length) {
-                                Notification.Builder builder = NotificationUtils
-                                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Importing colors...");
-                                builder.setProgress(records.length, to, false);
-                                NotificationUtils.send(builder.build(), 1);
+                                mHandler.obtainMessage(IMPORT_FLAG,
+                                        new ImportExportStatus((double) to / records.length, "Importing colors...")).sendToTarget();
                             } else {
-                                Notification.Builder builder = NotificationUtils
-                                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Colors imported");
-                                builder.setProgress(0, 0, false);
-                                NotificationUtils.send(builder.build(), 1);
                                 Log.d(TAG, "Colors imported from " + filename);
-                                mHandler.obtainMessage(IMPORT_FLAG, SUCCESS_FLAG).sendToTarget();
+                                mHandler.obtainMessage(IMPORT_FLAG,
+                                        new ImportExportStatus(1, "Colors imported")).sendToTarget();
+                                Intent intent = new Intent(IMPORT_ACTION);
+                                context.sendBroadcast(intent);
                             }
                         }
                     });
@@ -149,11 +137,7 @@ public class ColorImporterExporter {
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.d(TAG, "Could not import colors from " + filename);
-                builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Import failed");
-                builder.setProgress(0, 0, false);
-                NotificationUtils.send(builder.build(), 1);
-                mHandler.obtainMessage(IMPORT_FLAG, FAIL_FLAG).sendToTarget();
+                mHandler.obtainMessage(IMPORT_FLAG, new ImportExportStatus(-1, "Import failed")).sendToTarget();
             }
         }
     }
@@ -167,45 +151,38 @@ public class ColorImporterExporter {
 
         @Override
         public void run() {
-            Notification.Builder builder = null;
             try {
-                builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Fetching colors");
-                builder.setProgress(2, 0, false);
-                NotificationUtils.send(builder.build(), 2);
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(.0, "Fetching colors...")).sendToTarget();
                 ColorRecord[] records = colorDao.getColors();
 
                 File exportFile = new File(context.getExternalFilesDir(null), filename);
                 Log.d(TAG, "Writing data to " + exportFile);
-                builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Writing colors...");
-                builder.setProgress(2, 1, false);
-                NotificationUtils.send(builder.build(), 2);
                 if (!exportFile.exists()) {
                     exportFile.createNewFile();
                 }
                 FileWriter writer = new FileWriter(exportFile);
-                GSON.toJson(records, writer);
+                writer.write("[");
+                for (int i = 0; i < records.length - 1; i++) {
+                    writer.write(GSON.toJson(records[i]));
+                    writer.write(",");
+                    if (i % 500 == 0) {
+                        mHandler.obtainMessage(EXPORT_FLAG,
+                                new ImportExportStatus((double) i / records.length, "Writing colors...")).sendToTarget();
+                        Log.d(TAG, "Writing data at " + i);
+                        writer.flush();
+                    }
+                }
+                writer.write(GSON.toJson(records[records.length - 1]));
+                writer.write("]");
                 writer.flush();
                 writer.close();
 
                 Log.d(TAG, "Colors exported to " + exportFile);
-                builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Colors exported");
-                builder.setProgress(0, 0, false);
-                NotificationUtils.send(builder.build(), 2);
-                Message importCompletedMessage = mHandler.obtainMessage(EXPORT_FLAG, SUCCESS_FLAG);
-                importCompletedMessage.sendToTarget();
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(1.0, "Colors exported")).sendToTarget();
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.d(TAG, "Could not export colors to " + filename);
-                builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Export failed");
-                builder.setProgress(0, 0, false);
-                NotificationUtils.send(builder.build(), 2);
-
-                Message importCompletedMessage = mHandler.obtainMessage(EXPORT_FLAG, FAIL_FLAG);
-                importCompletedMessage.sendToTarget();
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(-1.0, "Export failed")).sendToTarget();
             }
         }
     }
@@ -219,10 +196,20 @@ public class ColorImporterExporter {
     }
 
     interface OnColorsExportListener {
-        void OnColorsExport(int result);
+        void OnColorsExport(ImportExportStatus progress);
     }
 
     interface OnColorsImportListener {
-        void OnColorsImport(int result);
+        void OnColorsImport(ImportExportStatus progress);
+    }
+
+    class ImportExportStatus {
+        double progress;
+        String message;
+
+        public ImportExportStatus(double progress, String message) {
+            this.progress = progress;
+            this.message = message;
+        }
     }
 }
