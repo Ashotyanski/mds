@@ -33,6 +33,8 @@
     <string name="error_colors_export">Could not export colors</string>
     <string name="success_colors_import">Colors imported</string>
     <string name="success_colors_export">Colors exported</string>
+    <string name="started_color_import">Import started</string>
+    <string name="started_color_export">Export started</string>
 
     <string name="url_image_status_empty">No image</string>
     <string name="url_image_status_failed">Failed to load image</string>
