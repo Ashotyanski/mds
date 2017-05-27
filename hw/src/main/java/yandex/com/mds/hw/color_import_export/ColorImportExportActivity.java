@@ -1,6 +1,7 @@
 package yandex.com.mds.hw.color_import_export;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import yandex.com.mds.hw.R;
+import yandex.com.mds.hw.utils.NotificationUtils;
 
 public class ColorImportExportActivity extends AppCompatActivity {
     private static final String TAG = ColorImportExportActivity.class.getName();
@@ -49,41 +51,73 @@ public class ColorImportExportActivity extends AppCompatActivity {
             getPreferenceManager().setSharedPreferencesMode(MODE_PRIVATE);
             addPreferencesFromResource(R.xml.pref_color);
             exporter = ColorImporterExporter.getInstance(getActivity());
-            exporter.setExportListener(new ColorImporterExporter.OnColorsExportListener() {
+            exporter.setImportListener(new ColorImporterExporter.OnColorsImportListener() {
                 @Override
-                public void OnColorsExport(ColorImporterExporter.ImportExportStatus status) {
+                public void OnColorsImport(ColorImporterExporter.ImportExportStatus status) {
+                    Notification.Builder builder = NotificationUtils
+                            .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", status.message);
                     if (status.progress == 0.0) {
+                        builder.setProgress(1, 0, false);
+                        NotificationUtils.send(builder.build(), 1);
+
                         progressDialog.setMessage(status.message);
-                        progressDialog.setMax(2);
-                        progressDialog.show();
+                        progressDialog.setProgress(0);
+                        progressDialog.setMax(100);
+                        if (getActivity() != null && !getActivity().isFinishing())
+                            progressDialog.show();
                     } else if (status.progress == 1.0) {
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 1);
+
                         progressDialog.dismiss();
-                        showResultToast(true, true);
+                        showResultToast(false, true);
                     } else if (status.progress == -1.0) {
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 1);
+
                         progressDialog.dismiss();
-                        showResultToast(true, false);
+                        showResultToast(false, false);
                     } else {
+                        builder.setProgress(100, (int) (status.progress * 100), false);
+                        NotificationUtils.send(builder.build(), 1);
+
                         if (progressDialog.isShowing()) {
                             progressDialog.setMessage(status.message);
-                            progressDialog.setProgress((int) (status.progress * 2));
+                            progressDialog.setProgress((int) (status.progress * 100));
                         }
                     }
                 }
             });
-            exporter.setImportListener(new ColorImporterExporter.OnColorsImportListener() {
+            exporter.setExportListener(new ColorImporterExporter.OnColorsExportListener() {
                 @Override
-                public void OnColorsImport(ColorImporterExporter.ImportExportStatus status) {
+                public void OnColorsExport(ColorImporterExporter.ImportExportStatus status) {
+                    Notification.Builder builder = NotificationUtils
+                            .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", status.message);
                     if (status.progress == 0.0) {
+                        builder.setProgress(2, 0, false);
+                        NotificationUtils.send(builder.build(), 2);
+
                         progressDialog.setMessage(status.message);
+                        progressDialog.setProgress(0);
                         progressDialog.setMax(100);
-                        progressDialog.show();
+                        if (getActivity() != null && !getActivity().isFinishing())
+                            progressDialog.show();
                     } else if (status.progress == 1.0) {
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 2);
+
                         progressDialog.dismiss();
-                        showResultToast(false, true);
+                        showResultToast(true, true);
                     } else if (status.progress == -1.0) {
+                        builder.setProgress(0, 0, false);
+                        NotificationUtils.send(builder.build(), 2);
+
                         progressDialog.dismiss();
-                        showResultToast(false, false);
+                        showResultToast(true, false);
                     } else {
+                        builder.setProgress(100, (int) (status.progress * 100), false);
+                        NotificationUtils.send(builder.build(), 2);
+
                         if (progressDialog.isShowing()) {
                             progressDialog.setMessage(status.message);
                             progressDialog.setProgress((int) (status.progress * 100));
