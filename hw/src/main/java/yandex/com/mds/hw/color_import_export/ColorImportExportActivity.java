@@ -44,9 +44,6 @@ public class ColorImportExportActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             progressDialog = new ProgressDialog(getActivity());
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.setCancelable(false);
-            progressDialog.setCanceledOnTouchOutside(false);
-//            progressDialog.dismiss();
 
             getPreferenceManager().setSharedPreferencesName(SHARED_PREFERENCES_NAME);
             getPreferenceManager().setSharedPreferencesMode(MODE_PRIVATE);
@@ -66,8 +63,10 @@ public class ColorImportExportActivity extends AppCompatActivity {
                         progressDialog.dismiss();
                         showResultToast(true, false);
                     } else {
-                        progressDialog.setMessage(status.message);
-                        progressDialog.setProgress((int) (status.progress * 2));
+                        if (progressDialog.isShowing()) {
+                            progressDialog.setMessage(status.message);
+                            progressDialog.setProgress((int) (status.progress * 2));
+                        }
                     }
                 }
             });
@@ -85,8 +84,10 @@ public class ColorImportExportActivity extends AppCompatActivity {
                         progressDialog.dismiss();
                         showResultToast(false, false);
                     } else {
-                        progressDialog.setMessage(status.message);
-                        progressDialog.setProgress((int) (status.progress * 100));
+                        if (progressDialog.isShowing()) {
+                            progressDialog.setMessage(status.message);
+                            progressDialog.setProgress((int) (status.progress * 100));
+                        }
                     }
                 }
             });
