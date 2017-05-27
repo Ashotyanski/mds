@@ -63,11 +63,11 @@ public class ColorImporterExporter {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case IMPORT_FLAG: {
-                        importListener.OnColorsImport((Integer) msg.obj);
+                        importListener.OnColorsImport((ImportExportStatus) msg.obj);
                         break;
                     }
                     case EXPORT_FLAG: {
-                        exportListener.OnColorsExport((Integer) msg.obj);
+                        exportListener.OnColorsExport((ImportExportStatus) msg.obj);
                         break;
                     }
                     case PROGRESS_FLAG: {
@@ -104,6 +104,7 @@ public class ColorImporterExporter {
                 builder.setProgress(1, 0, false);
                 NotificationUtils.send(builder.build(), 1);
                 Log.d(TAG, "Reading data from " + importFile);
+                mHandler.obtainMessage(IMPORT_FLAG, new ImportExportStatus(.0, "Reading colors...")).sendToTarget();
                 FileReader reader = new FileReader(importFile);
                 final ColorRecord[] records = GSON.fromJson(reader, ColorRecord[].class);
 
@@ -135,13 +136,16 @@ public class ColorImporterExporter {
                                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Importing colors...");
                                 builder.setProgress(records.length, to, false);
                                 NotificationUtils.send(builder.build(), 1);
+                                mHandler.obtainMessage(IMPORT_FLAG,
+                                        new ImportExportStatus((double) to / records.length, "Importing colors...")).sendToTarget();
                             } else {
                                 Notification.Builder builder = NotificationUtils
                                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Colors imported");
                                 builder.setProgress(0, 0, false);
                                 NotificationUtils.send(builder.build(), 1);
                                 Log.d(TAG, "Colors imported from " + filename);
-                                mHandler.obtainMessage(IMPORT_FLAG, SUCCESS_FLAG).sendToTarget();
+                                mHandler.obtainMessage(IMPORT_FLAG,
+                                        new ImportExportStatus(1, "Colors imported")).sendToTarget();
                             }
                         }
                     });
@@ -153,7 +157,7 @@ public class ColorImporterExporter {
                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors import", "Import failed");
                 builder.setProgress(0, 0, false);
                 NotificationUtils.send(builder.build(), 1);
-                mHandler.obtainMessage(IMPORT_FLAG, FAIL_FLAG).sendToTarget();
+                mHandler.obtainMessage(IMPORT_FLAG, new ImportExportStatus(-1, "Import failed")).sendToTarget();
             }
         }
     }
@@ -169,10 +173,12 @@ public class ColorImporterExporter {
         public void run() {
             Notification.Builder builder = null;
             try {
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(.0, "Colors export")).sendToTarget();
                 builder = NotificationUtils
                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Fetching colors");
                 builder.setProgress(2, 0, false);
                 NotificationUtils.send(builder.build(), 2);
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(.0, "Fetching colors")).sendToTarget();
                 ColorRecord[] records = colorDao.getColors();
 
                 File exportFile = new File(context.getExternalFilesDir(null), filename);
@@ -181,6 +187,7 @@ public class ColorImporterExporter {
                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Writing colors...");
                 builder.setProgress(2, 1, false);
                 NotificationUtils.send(builder.build(), 2);
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(0.5, "Writing colors...")).sendToTarget();
                 if (!exportFile.exists()) {
                     exportFile.createNewFile();
                 }
@@ -194,8 +201,7 @@ public class ColorImporterExporter {
                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Colors exported");
                 builder.setProgress(0, 0, false);
                 NotificationUtils.send(builder.build(), 2);
-                Message importCompletedMessage = mHandler.obtainMessage(EXPORT_FLAG, SUCCESS_FLAG);
-                importCompletedMessage.sendToTarget();
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(1.0, "Colors exported")).sendToTarget();
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.d(TAG, "Could not export colors to " + filename);
@@ -203,9 +209,7 @@ public class ColorImporterExporter {
                         .initNotificationBuilder(R.drawable.ic_import_export, "Colors export", "Export failed");
                 builder.setProgress(0, 0, false);
                 NotificationUtils.send(builder.build(), 2);
-
-                Message importCompletedMessage = mHandler.obtainMessage(EXPORT_FLAG, FAIL_FLAG);
-                importCompletedMessage.sendToTarget();
+                mHandler.obtainMessage(EXPORT_FLAG, new ImportExportStatus(-1.0, "Export failed")).sendToTarget();
             }
         }
     }
@@ -219,10 +223,20 @@ public class ColorImporterExporter {
     }
 
     interface OnColorsExportListener {
-        void OnColorsExport(int result);
+        void OnColorsExport(ImportExportStatus progress);
     }
 
     interface OnColorsImportListener {
-        void OnColorsImport(int result);
+        void OnColorsImport(ImportExportStatus progress);
+    }
+
+    class ImportExportStatus {
+        double progress;
+        String message;
+
+        public ImportExportStatus(double progress, String message) {
+            this.progress = progress;
+            this.message = message;
+        }
     }
 }

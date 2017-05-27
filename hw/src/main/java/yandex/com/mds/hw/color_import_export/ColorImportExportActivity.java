@@ -1,6 +1,7 @@
 package yandex.com.mds.hw.color_import_export;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -27,6 +28,7 @@ public class ColorImportExportActivity extends AppCompatActivity {
         public static final String SHARED_PREFERENCES_NAME = "colors_import_export";
         public static final String IMPORT_EXPORT_FILE_PREFERENCE = "import_export_file";
         public static final String DEFAULT_FILENAME = "colors.json";
+        private ProgressDialog progressDialog;
         private ColorImporterExporter exporter;
         private String importExportFilename;
 
@@ -38,22 +40,54 @@ public class ColorImportExportActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
+        public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setCancelable(false);
+            progressDialog.setCanceledOnTouchOutside(false);
+//            progressDialog.dismiss();
+
             getPreferenceManager().setSharedPreferencesName(SHARED_PREFERENCES_NAME);
             getPreferenceManager().setSharedPreferencesMode(MODE_PRIVATE);
             addPreferencesFromResource(R.xml.pref_color);
             exporter = ColorImporterExporter.getInstance(getActivity());
             exporter.setExportListener(new ColorImporterExporter.OnColorsExportListener() {
                 @Override
-                public void OnColorsExport(int result) {
-                    showResultToast(true, result == ColorImporterExporter.SUCCESS_FLAG);
+                public void OnColorsExport(ColorImporterExporter.ImportExportStatus status) {
+                    if (status.progress == 0.0) {
+                        progressDialog.setMessage(status.message);
+                        progressDialog.setMax(2);
+                        progressDialog.show();
+                    } else if (status.progress == 1.0) {
+                        progressDialog.dismiss();
+                        showResultToast(true, true);
+                    } else if (status.progress == -1.0) {
+                        progressDialog.dismiss();
+                        showResultToast(true, false);
+                    } else {
+                        progressDialog.setMessage(status.message);
+                        progressDialog.setProgress((int) (status.progress * 2));
+                    }
                 }
             });
             exporter.setImportListener(new ColorImporterExporter.OnColorsImportListener() {
                 @Override
-                public void OnColorsImport(int result) {
-                    showResultToast(false, result == ColorImporterExporter.SUCCESS_FLAG);
+                public void OnColorsImport(ColorImporterExporter.ImportExportStatus status) {
+                    if (status.progress == 0.0) {
+                        progressDialog.setMessage(status.message);
+                        progressDialog.setMax(100);
+                        progressDialog.show();
+                    } else if (status.progress == 1.0) {
+                        progressDialog.dismiss();
+                        showResultToast(false, true);
+                    } else if (status.progress == -1.0) {
+                        progressDialog.dismiss();
+                        showResultToast(false, false);
+                    } else {
+                        progressDialog.setMessage(status.message);
+                        progressDialog.setProgress((int) (status.progress * 100));
+                    }
                 }
             });
             Preference importPref = findPreference("import_colors");
@@ -103,8 +137,8 @@ public class ColorImportExportActivity extends AppCompatActivity {
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            if (key.contentEquals("import_export_file")) {
-                importExportFilename = sharedPreferences.getString(key, "colors.json");
+            if (key.contentEquals(IMPORT_EXPORT_FILE_PREFERENCE)) {
+                importExportFilename = sharedPreferences.getString(key, DEFAULT_FILENAME);
             }
         }
     }
