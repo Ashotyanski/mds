@@ -1,8 +1,8 @@
 package yandex.com.mds.hw.color_import_export;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import yandex.com.mds.hw.MainApplication;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.utils.NotificationUtils;
 
@@ -74,7 +75,7 @@ public class ColorImportExportActivity extends AppCompatActivity {
                     } else if (status.progress == -1.0) {
                         builder.setProgress(0, 0, false);
                         NotificationUtils.send(builder.build(), 1);
-
+                        progressDialog.setProgress(0);
                         progressDialog.dismiss();
                         showResultToast(false, false);
                     } else {
@@ -105,7 +106,7 @@ public class ColorImportExportActivity extends AppCompatActivity {
                     } else if (status.progress == 1.0) {
                         builder.setProgress(0, 0, false);
                         NotificationUtils.send(builder.build(), 2);
-
+                        progressDialog.setProgress(0);
                         progressDialog.dismiss();
                         showResultToast(true, true);
                     } else if (status.progress == -1.0) {
@@ -147,15 +148,14 @@ public class ColorImportExportActivity extends AppCompatActivity {
         }
 
         private void showResultToast(boolean isExport, boolean isSuccess) {
-            Activity activity = getActivity();
-            if (activity != null)
-                if (isExport) {
-                    Toast.makeText(activity, isSuccess ? R.string.success_colors_export :
-                            R.string.error_colors_export, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(activity, isSuccess ? R.string.success_colors_import :
-                            R.string.error_colors_import, Toast.LENGTH_SHORT).show();
-                }
+            Context context = MainApplication.getContext();
+            if (isExport) {
+                Toast.makeText(context, isSuccess ? R.string.success_colors_export :
+                        R.string.error_colors_export, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context, isSuccess ? R.string.success_colors_import :
+                        R.string.error_colors_import, Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override

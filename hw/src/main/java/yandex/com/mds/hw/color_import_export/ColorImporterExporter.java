@@ -2,6 +2,8 @@ package yandex.com.mds.hw.color_import_export;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,10 +29,9 @@ public class ColorImporterExporter {
     private static final String TAG = ColorImporterExporter.class.getName();
     private static final int IMPORT_FLAG = 1;
     private static final int EXPORT_FLAG = 2;
-    private static final int PROGRESS_FLAG = 3;
 
-    public static final int SUCCESS_FLAG = 1;
-    public static final int FAIL_FLAG = 2;
+    public static final String IMPORT_ACTION = "IMPORT";
+    public static final IntentFilter importIntentFilter = new IntentFilter(IMPORT_ACTION);
 
     private ColorDao colorDao;
     private ColorDatabaseHelper dbHelper;
@@ -65,9 +66,6 @@ public class ColorImporterExporter {
                     }
                     case EXPORT_FLAG: {
                         exportListener.OnColorsExport((ImportExportStatus) msg.obj);
-                        break;
-                    }
-                    case PROGRESS_FLAG: {
                         break;
                     }
                 }
@@ -130,6 +128,8 @@ public class ColorImporterExporter {
                                 Log.d(TAG, "Colors imported from " + filename);
                                 mHandler.obtainMessage(IMPORT_FLAG,
                                         new ImportExportStatus(1, "Colors imported")).sendToTarget();
+                                Intent intent = new Intent(IMPORT_ACTION);
+                                context.sendBroadcast(intent);
                             }
                         }
                     });
@@ -175,8 +175,6 @@ public class ColorImporterExporter {
                 writer.write(GSON.toJson(records[records.length - 1]));
                 writer.write("]");
                 writer.flush();
-
-//                GSON.toJson(records, writer);
                 writer.close();
 
                 Log.d(TAG, "Colors exported to " + exportFile);
