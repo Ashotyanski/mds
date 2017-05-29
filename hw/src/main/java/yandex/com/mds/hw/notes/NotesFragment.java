@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -15,8 +14,10 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import yandex.com.mds.hw.MainActivity;
@@ -91,7 +93,11 @@ public class NotesFragment extends Fragment {
         toolbar.setTitle("Notes");
 
         list = (RecyclerView) view.findViewById(R.id.list);
-        list.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        list.setLayoutManager(layoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(list.getContext(),
+                layoutManager.getOrientation());
+        list.addItemDecoration(dividerItemDecoration);
         NotesRecyclerViewAdapter adapter = new NotesRecyclerViewAdapter(noteDao.getNotes());
         adapter.setOnClickListener(new NotesRecyclerViewAdapter.OnNoteSelectedListener() {
             @Override
@@ -101,6 +107,21 @@ public class NotesFragment extends Fragment {
             }
         });
         list.setAdapter(adapter);
+        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                Collections.swap(((NotesRecyclerViewAdapter) recyclerView.getAdapter()).getNotes(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                recyclerView.getAdapter().notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                return true;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            }
+        };
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(list);
         syncCompleteReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, final Intent intent) {
@@ -187,13 +208,11 @@ public class NotesFragment extends Fragment {
     }
 
     public static int getCurrentUserId(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES_USER, MODE_PRIVATE);
-        return preferences.getInt("USER_ID", 0);
+        return context.getSharedPreferences(PREFERENCES_USER, MODE_PRIVATE).getInt("USER_ID", 0);
     }
 
     public static void setCurrentUserId(Context context, int id) {
-        SharedPreferences preferences = context.getSharedPreferences("USER", MODE_PRIVATE);
-        preferences.edit().putInt("USER_ID", id).apply();
+        context.getSharedPreferences("USER", MODE_PRIVATE).edit().putInt("USER_ID", id).apply();
     }
 
     @Override
@@ -210,8 +229,6 @@ public class NotesFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-//        menu.clear();
-//        getActivity().invalidateOptionsMenu();
         inflater.inflate(R.menu.menu_colors, menu);
         Log.d(TAG, "onCreateOptionsMenu: Menu is created");
     }

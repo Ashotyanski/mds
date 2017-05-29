@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +34,8 @@ import static yandex.com.mds.hw.notes.NotesFragment.setCurrentUserId;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SyncConflictFragment.OnAllConflictsResolvedListener {
     private static final String TAG = MainActivity.class.getName();
 
-    private DrawerLayout drawer;
+    private MainDrawerLayout drawer;
+    private FrameLayout content;
     private TextView userIdView;
 
     private NoteSynchronizer synchronizer;
@@ -40,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationManager navigationManager;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
+    private NavigationView navigationView;
+    private boolean isDrawerLocked;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -52,17 +57,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
         synchronizer = NoteSynchronizer.getInstance();
 
+        content = (FrameLayout) findViewById(R.id.content_frame);
         initDrawer();
     }
 
     private void initDrawer() {
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (MainDrawerLayout) findViewById(R.id.drawer_layout);
         toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
+            drawer.setScrimColor(0x00000000);
+            isDrawerLocked = true;
+        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            drawer.setScrimColor(0x99000000);
+            isDrawerLocked = false;
+        }
+
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
@@ -152,22 +168,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.action_notes: {
                 navigationManager.showNotes();
-                drawer.closeDrawers();
+                if (!isDrawerLocked) drawer.closeDrawers();
                 return true;
             }
             case R.id.action_sync: {
                 syncNotes(getCurrentUserId(this));
-                drawer.closeDrawers();
+                if (!isDrawerLocked) drawer.closeDrawers();
                 return true;
             }
             case R.id.action_import_export: {
                 navigationManager.showNotesImportExport();
-                drawer.closeDrawers();
+                if (!isDrawerLocked) drawer.closeDrawers();
                 return true;
             }
             case R.id.action_delete_sync_cache: {
                 synchronizer.clearCache();
-                drawer.closeDrawers();
+                if (!isDrawerLocked) drawer.closeDrawers();
                 return true;
             }
         }
