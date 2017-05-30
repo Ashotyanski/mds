@@ -18,7 +18,6 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,7 +42,6 @@ import yandex.com.mds.hw.notes.synchronizer.ConflictNotes;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
 import yandex.com.mds.hw.notes.synchronizer.SyncConflictFragment;
 
-import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_CONFLICT_NOTES;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_ILLEGAL_FORMAT;
@@ -98,15 +96,6 @@ public class NotesFragment extends Fragment {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(list.getContext(),
                 layoutManager.getOrientation());
         list.addItemDecoration(dividerItemDecoration);
-        NotesRecyclerViewAdapter adapter = new NotesRecyclerViewAdapter(noteDao.getNotes());
-        adapter.setOnClickListener(new NotesRecyclerViewAdapter.OnNoteSelectedListener() {
-            @Override
-            public void onNoteSelected(NotesRecyclerViewAdapter.ViewHolder holder, Note note) {
-                View sharedView = holder.colorView;
-                editNote(holder.getAdapterPosition(), ((NotesRecyclerViewAdapter) list.getAdapter()).getNotes(), sharedView);
-            }
-        });
-        list.setAdapter(adapter);
         ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(
                 ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
@@ -165,8 +154,16 @@ public class NotesFragment extends Fragment {
                 loadNotes(query, getCurrentUserId(getContext()));
             }
         }, (LinearLayout) view.findViewById(R.id.query));
-
-        loadNotes();
+        NotesRecyclerViewAdapter adapter = new NotesRecyclerViewAdapter(
+                noteDao.getNotes(queryPresenter.getQuery(), getCurrentUserId(getContext())));
+        adapter.setOnClickListener(new NotesRecyclerViewAdapter.OnNoteSelectedListener() {
+            @Override
+            public void onNoteSelected(NotesRecyclerViewAdapter.ViewHolder holder, Note note) {
+                View sharedView = holder.colorView;
+                editNote(holder.getAdapterPosition(), ((NotesRecyclerViewAdapter) list.getAdapter()).getNotes(), sharedView);
+            }
+        });
+        list.setAdapter(adapter);
         return view;
     }
 
@@ -230,17 +227,6 @@ public class NotesFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_colors, menu);
-        Log.d(TAG, "onCreateOptionsMenu: Menu is created");
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == NOTE_EDIT_REQUEST_CODE || requestCode == NOTE_IMPORT_EXPORT_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                loadNotes();
-            }
-        }
     }
 
     private void editNote(int noteId, List<Note> notes, View sharedView) {

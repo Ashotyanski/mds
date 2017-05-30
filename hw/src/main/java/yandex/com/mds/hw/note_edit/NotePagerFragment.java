@@ -4,6 +4,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.transition.Fade;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.transition.TransitionInflater;
@@ -20,6 +21,10 @@ import yandex.com.mds.hw.models.Note;
 import static yandex.com.mds.hw.note_edit.NoteEditFragment.TRANSITION_NAME;
 
 public class NotePagerFragment extends Fragment {
+    private static final String TAG = NotePagerFragment.class.getName();
+    private ViewPager pager;
+    private NotePagerAdapter adapter;
+
     public NotePagerFragment() {
     }
 
@@ -36,12 +41,24 @@ public class NotePagerFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setHasOptionsMenu(true);
-        postponeEnterTransition();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            setEnterSharedElementCallback(new SharedElementCallback() {
+//                @Override
+//                public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+//                    super.onMapSharedElements(names, sharedElements);
+//                    Log.d(TAG, "onMapSharedElements: " + names);
+//                    View view = (pager.getChildAt(pager.getCurrentItem())).findViewById(R.id.color);
+//                    if (view != null) {
+//                        sharedElements.remove(names.get(0));
+//                        names.set(0, ViewCompat.getTransitionName(view));
+//                        sharedElements.put(names.get(0), view);
+//                    }
+//                }
+//            });
             setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
+            setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
+            setExitTransition(new Fade(Fade.IN));
         }
-        setSharedElementReturnTransition(null);
     }
 
     @Nullable
@@ -51,9 +68,9 @@ public class NotePagerFragment extends Fragment {
         Bundle args = getArguments();
         int currentPos = args.getInt("NOTE_POS");
         List<Note> notes = args.getParcelableArrayList("NOTES");
-        final ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
+        pager = (ViewPager) view.findViewById(R.id.pager);
         String transitionName = args.getString(TRANSITION_NAME);
-        final NotePagerAdapter adapter = new NotePagerAdapter(getChildFragmentManager(), notes, transitionName);
+        adapter = new NotePagerAdapter(getChildFragmentManager(), notes, transitionName);
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {

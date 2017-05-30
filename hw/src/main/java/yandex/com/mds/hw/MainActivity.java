@@ -23,6 +23,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import yandex.com.mds.hw.navigation.MainDrawerLayout;
+import yandex.com.mds.hw.navigation.NavigationManager;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
 import yandex.com.mds.hw.notes.synchronizer.SyncConflictFragment;

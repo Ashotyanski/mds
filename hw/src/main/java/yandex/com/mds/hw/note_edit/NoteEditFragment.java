@@ -49,16 +49,18 @@ public class NoteEditFragment extends Fragment {
 
     EditText titleView;
     EditText descriptionView;
+
     EditableColorView colorView;
+
     Button saveButton;
     UrlImageView urlImageView;
     Note note;
-
     SaveTask saveTask;
+
     AddTask addTask;
     DeleteTask deleteTask;
-
     private boolean isViewCounted = false;
+
     private int ownerId = -1;
 
     public static NoteEditFragment newInstance(int noteId, int ownerId, String transitionName) {
@@ -77,13 +79,11 @@ public class NoteEditFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: Creating");
         setHasOptionsMenu(true);
-        postponeEnterTransition();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
+            setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
         }
-//        setSharedElementReturnTransition(null);
     }
 
     @Override
@@ -92,7 +92,6 @@ public class NoteEditFragment extends Fragment {
 
         titleView = (EditText) view.findViewById(R.id.title);
         descriptionView = (EditText) view.findViewById(R.id.description);
-//        ViewCompat.setTransitionName(colorView, String.valueOf(getArguments().getInt(ID)));
         saveButton = (Button) view.findViewById(R.id.save_button);
         urlImageView = (UrlImageView) view.findViewById(R.id.url_image);
         colorView = (EditableColorView) view.findViewById(R.id.color);
@@ -248,5 +247,9 @@ public class NoteEditFragment extends Fragment {
         colorView.setDefaultColor(defaultColor);
         colorView.setColor(color);
         urlImageView.applyUrl(url);
+    }
+
+    public EditableColorView getSharedView() {
+        return colorView;
     }
 }

@@ -33,6 +33,5 @@ public class NotePagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public int getCount() {
         return notes.size();
-//        return 3;
     }
 }
