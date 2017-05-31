@@ -91,15 +91,16 @@ public class Note implements Parcelable {
     public Note() {
     }
 
-    public Note(int id, int color, String title, String description, Date creationDate, Date lastModificationDate, Date lastViewDate, String imageUrl) {
+    public Note(int id, int ownerId, int color, String title, String description, Date creationDate, String imageUrl) {
         this.id = id;
         this.color = color;
         this.title = title;
         this.description = description;
         this.creationDate = creationDate;
-        this.lastModificationDate = lastModificationDate;
-        this.lastViewDate = lastViewDate;
+        this.lastModificationDate = creationDate;
+        this.lastViewDate = creationDate;
         this.imageUrl = imageUrl;
+        this.ownerId = ownerId;
     }
 
     public int getOwnerId() {
