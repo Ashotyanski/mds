@@ -5,27 +5,21 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import yandex.com.mds.hw.MainApplication;
+import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.notes.query.Query;
 import yandex.com.mds.hw.notes.query.Utils;
 import yandex.com.mds.hw.notes.query.clauses.DateFilter;
 import yandex.com.mds.hw.notes.query.clauses.DateIntervalFilter;
 import yandex.com.mds.hw.notes.query.clauses.Sort;
-import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.utils.ArrayUtils;
 import yandex.com.mds.hw.utils.TimeUtils;
 
 import static android.provider.BaseColumns._ID;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.COLOR;
-import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.CREATION_DATE;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.DESCRIPTION;
-import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.IMAGE_URL;
-import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.LAST_MODIFICATION_DATE;
-import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.LAST_VIEW_DATE;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.OWNER_ID;
-import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.SERVER_ID;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.TABLE_NAME;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.TITLE;
 
@@ -162,41 +156,6 @@ public class NoteDaoImpl implements NoteDao {
         }
         c.close();
         return false;
-    }
-
-    private ContentValues toContentValues(Note note, boolean isUpdate) {
-        ContentValues contentValues = new ContentValues();
-        if (isUpdate)
-            contentValues.put(_ID, note.getId());
-        contentValues.put(COLOR, note.getColor());
-        contentValues.put(TITLE, note.getTitle());
-        contentValues.put(DESCRIPTION, note.getDescription());
-        if (note.getCreationDate() != null)
-            contentValues.put(CREATION_DATE, note.getCreationDate().getTime());
-        if (note.getLastModificationDate() != null)
-            contentValues.put(LAST_MODIFICATION_DATE, note.getLastModificationDate().getTime());
-        if (note.getLastViewDate() != null)
-            contentValues.put(LAST_VIEW_DATE, note.getLastViewDate().getTime());
-        contentValues.put(IMAGE_URL, note.getImageUrl());
-        if (!isUpdate)
-            contentValues.put(OWNER_ID, note.getOwnerId());
-        contentValues.put(SERVER_ID, note.getServerId());
-        return contentValues;
-    }
-
-    private Note toRecord(Cursor cursor) {
-        Note note = new Note();
-        note.setId(cursor.getInt(cursor.getColumnIndex(_ID)));
-        note.setColor(cursor.getInt(cursor.getColumnIndex(COLOR)));
-        note.setTitle(cursor.getString(cursor.getColumnIndex(TITLE)));
-        note.setDescription(cursor.getString(cursor.getColumnIndex(DESCRIPTION)));
-        note.setCreationDate(new Date(cursor.getLong(cursor.getColumnIndex(CREATION_DATE))));
-        note.setLastModificationDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE))));
-        note.setLastViewDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE))));
-        note.setImageUrl(cursor.getString(cursor.getColumnIndex(IMAGE_URL)));
-        note.setOwnerId(cursor.getInt(cursor.getColumnIndex(OWNER_ID)));
-        note.setServerId(cursor.getInt(cursor.getColumnIndex(SERVER_ID)));
-        return note;
     }
 
     private Note[] toRecords(Cursor cursor) {

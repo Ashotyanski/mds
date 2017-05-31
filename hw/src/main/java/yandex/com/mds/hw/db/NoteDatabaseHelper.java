@@ -97,6 +97,9 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
         if (note.getLastViewDate() != null)
             contentValues.put(LAST_VIEW_DATE, note.getLastViewDate().getTime());
         contentValues.put(IMAGE_URL, note.getImageUrl());
+        if (!isUpdate)
+            contentValues.put(OWNER_ID, note.getOwnerId());
+        contentValues.put(SERVER_ID, note.getServerId());
         return contentValues;
     }
 
@@ -110,6 +113,8 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
         note.setLastModificationDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE))));
         note.setLastViewDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE))));
         note.setImageUrl(cursor.getString(cursor.getColumnIndex(IMAGE_URL)));
+        note.setOwnerId(cursor.getInt(cursor.getColumnIndex(OWNER_ID)));
+        note.setServerId(cursor.getInt(cursor.getColumnIndex(SERVER_ID)));
         return note;
     }
 

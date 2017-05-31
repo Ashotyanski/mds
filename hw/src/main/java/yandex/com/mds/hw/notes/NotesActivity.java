@@ -47,8 +47,6 @@ import yandex.com.mds.hw.notes.synchronizer.ConflictNotes;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
 import yandex.com.mds.hw.notes.synchronizer.SyncConflictFragment;
-import yandex.com.mds.hw.network.NoteService;
-import yandex.com.mds.hw.network.ServiceGenerator;
 import yandex.com.mds.hw.utils.NetworkUtils;
 
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_CONFLICT_NOTES;
@@ -192,7 +190,7 @@ public class NotesActivity extends AppCompatActivity implements NavigationView.O
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(syncCompleteReceiver, new IntentFilter(NoteSynchronizer.SYNC_COMPLETE_ACTION));
-        LocalBroadcastManager.getInstance(this).registerReceiver(importReceiver, ColorImporterExporter.importIntentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(importReceiver, NoteImporterExporter.importIntentFilter);
     }
 
     @Override

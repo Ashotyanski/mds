@@ -52,9 +52,9 @@ public class NoteImportExportActivity extends AppCompatActivity {
             getPreferenceManager().setSharedPreferencesMode(MODE_PRIVATE);
             addPreferencesFromResource(R.xml.pref_note);
             exporter = NoteImporterExporter.getInstance(getActivity());
-            exporter.setImportListener(new NoteImporterExporter.OnColorsExportListener() {
+            exporter.setImportListener(new NoteImporterExporter.OnColorsImportListener() {
                 @Override
-=                public void OnColorsImport(ColorImporterExporter.ImportExportStatus status) {
+                public void OnColorsImport(NoteImporterExporter.ImportExportStatus status) {
                     Notification.Builder builder = NotificationUtils
                             .initNotificationBuilder(R.drawable.ic_import_export, "Notes import", status.message);
                     if (status.progress == 0.0) {
@@ -89,7 +89,7 @@ public class NoteImportExportActivity extends AppCompatActivity {
                     }
                 }
             });
-            exporter.setExportListener(new NoteImporterExporter().OnColorsExportListener() {
+            exporter.setExportListener(new NoteImporterExporter.OnColorsExportListener() {
                 @Override
                 public void OnColorsExport(NoteImporterExporter.ImportExportStatus status) {
                     Notification.Builder builder = NotificationUtils
@@ -130,7 +130,7 @@ public class NoteImportExportActivity extends AppCompatActivity {
             importPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Toast.makeText(getActivity(), R.string.started_color_import, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.started_notes_import, Toast.LENGTH_SHORT).show();
                     exporter.importColors(importExportFilename);
                     getActivity().setResult(RESULT_OK);
                     return true;
@@ -140,7 +140,7 @@ public class NoteImportExportActivity extends AppCompatActivity {
             exportPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Toast.makeText(getActivity(), R.string.started_color_export, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.started_notes_export, Toast.LENGTH_SHORT).show();
                     exporter.exportColors(importExportFilename);
                     return true;
                 }
@@ -150,11 +150,11 @@ public class NoteImportExportActivity extends AppCompatActivity {
         private void showResultToast(boolean isExport, boolean isSuccess) {
             Context context = MainApplication.getContext();
             if (isExport) {
-                Toast.makeText(context, isSuccess ? R.string.success_colors_export :
-                        R.string.error_colors_export, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, isSuccess ? R.string.success_notes_export :
+                        R.string.error_notes_export, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(context, isSuccess ? R.string.success_colors_import :
-                        R.string.error_colors_import, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, isSuccess ? R.string.success_notes_import :
+                        R.string.error_notes_import, Toast.LENGTH_SHORT).show();
             }
         }
 
