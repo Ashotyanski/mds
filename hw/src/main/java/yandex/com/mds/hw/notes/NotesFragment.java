@@ -36,6 +36,7 @@ import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.db.NoteDaoImpl;
 import yandex.com.mds.hw.models.Note;
+import yandex.com.mds.hw.note_import_export.NoteImporterExporter;
 import yandex.com.mds.hw.notes.query.Query;
 import yandex.com.mds.hw.notes.query.presenters.QueryPresenter;
 import yandex.com.mds.hw.notes.synchronizer.ConflictNotes;
@@ -61,6 +62,7 @@ public class NotesFragment extends Fragment {
 
     private NoteDao noteDao = new NoteDaoImpl();
     private BroadcastReceiver syncCompleteReceiver;
+    private BroadcastReceiver importReceiver;
     private View view;
 
     public NotesFragment() {
@@ -164,6 +166,14 @@ public class NotesFragment extends Fragment {
             }
         });
         list.setAdapter(adapter);
+
+        importReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                loadNotes();
+            }
+        };
+
         return view;
     }
 
@@ -171,12 +181,14 @@ public class NotesFragment extends Fragment {
     public void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(syncCompleteReceiver, new IntentFilter(NoteSynchronizer.SYNC_COMPLETE_ACTION));
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(importReceiver, NoteImporterExporter.importIntentFilter);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(syncCompleteReceiver);
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(importReceiver);
     }
 
     private void loadNotes() {

@@ -1,80 +1,121 @@
 package yandex.com.mds.hw.note_import_export;
 
-import android.app.Activity;
 import android.app.Notification;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
+import android.support.annotation.Nullable;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
-import yandex.com.mds.hw.MainActivity;
+import yandex.com.mds.hw.MainApplication;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.utils.NotificationUtils;
 
-public class NoteImportExportFragment extends PreferenceFragmentCompat {
-    private static final String TAG = NoteImportExportFragment.class.getName();
-    public static final String SHARED_PREFERENCES_NAME = "notes_import_export";
-    private NoteImporterExporter exporter;
+import static android.content.Context.MODE_PRIVATE;
 
-    public NoteImportExportFragment() {
+public class NoteImportExportFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static final String SHARED_PREFERENCES_NAME = "notes_import_export";
+    public static final String IMPORT_EXPORT_FILE_PREFERENCE = "import_export_file";
+    public static final String DEFAULT_FILENAME = "notes.json";
+    private ProgressDialog progressDialog;
+    private NoteImporterExporter exporter;
+    private String importExportFilename;
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        SharedPreferences s = getActivity().getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        importExportFilename = s.getString(IMPORT_EXPORT_FILE_PREFERENCE, DEFAULT_FILENAME);
     }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.pref_note, rootKey);
+        getPreferenceManager().setSharedPreferencesName(SHARED_PREFERENCES_NAME);
+        getPreferenceManager().setSharedPreferencesMode(MODE_PRIVATE);
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        ActionBar toolbar = ((MainActivity) getActivity()).getSupportActionBar();
-        toolbar.setTitle("Import/Export notes");
-        getPreferenceManager().setSharedPreferencesName(SHARED_PREFERENCES_NAME);
+    public void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         exporter = NoteImporterExporter.getInstance(getActivity());
-        exporter.setExportListener(new NoteImporterExporter.OnColorsExportListener() {
+        exporter.setImportListener(new NoteImporterExporter.OnColorsImportListener() {
             @Override
-            public void OnColorsExport(int result) {
-                if (result == NoteImporterExporter.SUCCESS_FLAG) {
-                    Notification.Builder builder = NotificationUtils
-                            .initNotificationBuilder(R.drawable.ic_import_export, " Colors export", "Colors exported");
-                    builder.setProgress(0, 0, false);
-                    NotificationUtils.send(builder.build(), 2);
-                    Log.d(TAG, "Notes exported to " + getImportExportFilename());
-                    Toast.makeText(getActivity(), R.string.success_notes_export, Toast.LENGTH_SHORT).show();
-                } else {
-                    Notification.Builder builder = NotificationUtils
-                            .initNotificationBuilder(R.drawable.ic_import_export, " Notes export", "Export failed");
-                    builder.setProgress(0, 0, false);
-                    NotificationUtils.send(builder.build(), 2);
+            public void OnColorsImport(NoteImporterExporter.ImportExportStatus status) {
+                Notification.Builder builder = NotificationUtils
+                        .initNotificationBuilder(R.drawable.ic_import_export, "Notes import", status.message);
+                if (status.progress == 0.0) {
+                    builder.setProgress(1, 0, false);
+                    NotificationUtils.send(builder.build(), 1);
 
-                    Log.d(TAG, "Could not export notes to " + getImportExportFilename());
-                    Toast.makeText(getActivity(), R.string.error_notes_export, Toast.LENGTH_SHORT).show();
+                    progressDialog.setMessage(status.message);
+                    progressDialog.setProgress(0);
+                    progressDialog.setMax(100);
+                    if (getActivity() != null && !getActivity().isFinishing())
+                        progressDialog.show();
+                } else if (status.progress == 1.0) {
+                    builder.setProgress(0, 0, false);
+                    NotificationUtils.send(builder.build(), 1);
+
+                    progressDialog.dismiss();
+                    showResultToast(false, true);
+                } else if (status.progress == -1.0) {
+                    builder.setProgress(0, 0, false);
+                    NotificationUtils.send(builder.build(), 1);
+                    progressDialog.setProgress(0);
+                    progressDialog.dismiss();
+                    showResultToast(false, false);
+                } else {
+                    builder.setProgress(100, (int) (status.progress * 100), false);
+                    NotificationUtils.send(builder.build(), 1);
+
+                    if (progressDialog.isShowing()) {
+                        progressDialog.setMessage(status.message);
+                        progressDialog.setProgress((int) (status.progress * 100));
+                    }
                 }
             }
         });
-        exporter.setImportListener(new NoteImporterExporter.OnColorsImportListener() {
+        exporter.setExportListener(new NoteImporterExporter.OnColorsExportListener() {
             @Override
-            public void OnColorsImport(int result) {
-                if (result == NoteImporterExporter.SUCCESS_FLAG) {
-                    Notification.Builder builder = NotificationUtils
-                            .initNotificationBuilder(R.drawable.ic_import_export, " Notes import", "Notes imported");
-                    builder.setProgress(0, 0, false);
-                    NotificationUtils.send(builder.build(), 1);
+            public void OnColorsExport(NoteImporterExporter.ImportExportStatus status) {
+                Notification.Builder builder = NotificationUtils
+                        .initNotificationBuilder(R.drawable.ic_import_export, "Notes export", status.message);
+                if (status.progress == 0.0) {
+                    builder.setProgress(2, 0, false);
+                    NotificationUtils.send(builder.build(), 2);
 
-                    Log.d(TAG, "Notes imported from " + getImportExportFilename());
-                    Toast.makeText(getActivity(), R.string.success_notes_import, Toast.LENGTH_SHORT).show();
+                    progressDialog.setMessage(status.message);
+                    progressDialog.setProgress(0);
+                    progressDialog.setMax(100);
+                    if (getActivity() != null && !getActivity().isFinishing())
+                        progressDialog.show();
+                } else if (status.progress == 1.0) {
+                    builder.setProgress(0, 0, false);
+                    NotificationUtils.send(builder.build(), 2);
+                    progressDialog.setProgress(0);
+                    progressDialog.dismiss();
+                    showResultToast(true, true);
+                } else if (status.progress == -1.0) {
+                    builder.setProgress(0, 0, false);
+                    NotificationUtils.send(builder.build(), 2);
+
+                    progressDialog.dismiss();
+                    showResultToast(true, false);
                 } else {
-                    Notification.Builder builder = NotificationUtils
-                            .initNotificationBuilder(R.drawable.ic_import_export, " Notes import", "Import failed");
-                    builder.setProgress(0, 0, false);
-                    NotificationUtils.send(builder.build(), 1);
+                    builder.setProgress(100, (int) (status.progress * 100), false);
+                    NotificationUtils.send(builder.build(), 2);
 
-                    Log.d(TAG, "Could not import notes from " + getImportExportFilename());
-                    Toast.makeText(getActivity(), R.string.error_notes_import, Toast.LENGTH_SHORT).show();
+                    if (progressDialog.isShowing()) {
+                        progressDialog.setMessage(status.message);
+                        progressDialog.setProgress((int) (status.progress * 100));
+                    }
                 }
             }
         });
@@ -82,14 +123,8 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat {
         importPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Notification.Builder builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, " Notes import", "Importing notes");
-                builder.setProgress(0, 0, true);
-                NotificationUtils.send(builder.build(), 1);
-
-                String file = getImportExportFilename();
-                exporter.importColors(file);
-                getActivity().setResult(Activity.RESULT_OK);
+                Toast.makeText(getActivity(), R.string.started_notes_import, Toast.LENGTH_SHORT).show();
+                exporter.importColors(importExportFilename);
                 return true;
             }
         });
@@ -97,20 +132,40 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat {
         exportPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Notification.Builder builder = NotificationUtils
-                        .initNotificationBuilder(R.drawable.ic_import_export, " Note export", "Exporting notes");
-                builder.setProgress(0, 0, true);
-                NotificationUtils.send(builder.build(), 2);
-
-                String file = getImportExportFilename();
-                exporter.exportColors(file);
+                Toast.makeText(getActivity(), R.string.started_notes_export, Toast.LENGTH_SHORT).show();
+                exporter.exportColors(importExportFilename);
                 return true;
             }
         });
     }
 
-    private String getImportExportFilename() {
-        SharedPreferences s = getActivity().getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return s.getString("import_export_file", "notes.json");
+    private void showResultToast(boolean isExport, boolean isSuccess) {
+        Context context = MainApplication.getContext();
+        if (isExport) {
+            Toast.makeText(context, isSuccess ? R.string.success_notes_export :
+                    R.string.error_notes_export, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, isSuccess ? R.string.success_notes_import :
+                    R.string.error_notes_import, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.contentEquals(IMPORT_EXPORT_FILE_PREFERENCE)) {
+            importExportFilename = sharedPreferences.getString(key, DEFAULT_FILENAME);
+        }
     }
 }
