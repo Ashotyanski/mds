@@ -13,11 +13,15 @@ public class ServiceGenerator {
 
     private static Retrofit.Builder builder =
             new Retrofit.Builder()
-                    .baseUrl(API_BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create(SerializationUtils.GSON_SERVER));
 
     public static <S> S createService(Class<S> serviceClass) {
-        Retrofit retrofit = builder.client(httpClient.build()).build();
+        Retrofit retrofit = builder.baseUrl(API_BASE_URL).client(httpClient.build()).build();
+        return retrofit.create(serviceClass);
+    }
+
+    public static <S> S createService(Class<S> serviceClass, String url) {
+        Retrofit retrofit = builder.baseUrl(url).client(httpClient.build()).build();
         return retrofit.create(serviceClass);
     }
 }

@@ -26,8 +26,7 @@ import android.widget.Toast;
 import yandex.com.mds.hw.navigation.MainDrawerLayout;
 import yandex.com.mds.hw.navigation.NavigationManager;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService;
-import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
-import yandex.com.mds.hw.notes.synchronizer.SyncConflictFragment;
+import yandex.com.mds.hw.notes.synchronizer.conflicts.SyncConflictFragment;
 import yandex.com.mds.hw.utils.NetworkUtils;
 
 import static yandex.com.mds.hw.notes.NotesFragment.getCurrentUserId;
@@ -40,8 +39,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FrameLayout content;
     private TextView userIdView;
 
-    private NoteSynchronizer synchronizer;
-
     private NavigationManager navigationManager;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
@@ -53,11 +50,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         navigationManager = new NavigationManager(getSupportFragmentManager());
-//        navigationManager.showNotes();
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        synchronizer = NoteSynchronizer.getInstance();
 
         content = (FrameLayout) findViewById(R.id.content_frame);
         initDrawer();
@@ -184,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return true;
             }
             case R.id.action_delete_sync_cache: {
-                synchronizer.clearCache();
+//                synchronizer.clearCache();
                 if (!isDrawerLocked) drawer.closeDrawers();
                 return true;
             }

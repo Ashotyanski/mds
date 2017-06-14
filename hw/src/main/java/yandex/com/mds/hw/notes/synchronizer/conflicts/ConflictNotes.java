@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.notes.synchronizer;
+package yandex.com.mds.hw.notes.synchronizer.conflicts;
 
 import android.os.Parcel;
 import android.os.Parcelable;

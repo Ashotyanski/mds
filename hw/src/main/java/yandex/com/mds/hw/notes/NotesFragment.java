@@ -39,22 +39,19 @@ import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.note_import_export.NoteImporterExporter;
 import yandex.com.mds.hw.notes.query.Query;
 import yandex.com.mds.hw.notes.query.presenters.QueryPresenter;
-import yandex.com.mds.hw.notes.synchronizer.ConflictNotes;
-import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
-import yandex.com.mds.hw.notes.synchronizer.SyncConflictFragment;
+import yandex.com.mds.hw.notes.synchronizer.conflicts.ConflictNotes;
+import yandex.com.mds.hw.notes.synchronizer.conflicts.SyncConflictFragment;
 
 import static android.content.Context.MODE_PRIVATE;
+import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_COMPLETE_ACTION;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_CONFLICT_NOTES;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_ILLEGAL_FORMAT;
 
 public class NotesFragment extends Fragment {
     private static final String TAG = NotesFragment.class.getName();
-    private static final String PREFERENCES_USER = "USER";
+    public static final String PREFERENCES_USER = "USER";
     private static final String QUERY_BUNDLE_KEY = "query";
     private static final String USER_ID_BUNDLE_KEY = "user_id";
-
-    public static final int NOTE_IMPORT_EXPORT_REQUEST_CODE = 2;
-    public static final int NOTE_EDIT_REQUEST_CODE = 1;
 
     private RecyclerView list;
     private QueryPresenter queryPresenter;
@@ -90,7 +87,7 @@ public class NotesFragment extends Fragment {
             }
         });
         ActionBar toolbar = ((MainActivity) getActivity()).getSupportActionBar();
-        toolbar.setTitle("Notes");
+        toolbar.setTitle(R.string.title_notes);
 
         list = (RecyclerView) view.findViewById(R.id.list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -180,7 +177,7 @@ public class NotesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(syncCompleteReceiver, new IntentFilter(NoteSynchronizer.SYNC_COMPLETE_ACTION));
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(syncCompleteReceiver, new IntentFilter(SYNC_COMPLETE_ACTION));
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(importReceiver, NoteImporterExporter.importIntentFilter);
     }
 
@@ -217,7 +214,7 @@ public class NotesFragment extends Fragment {
     }
 
     public static int getCurrentUserId(Context context) {
-        return context.getSharedPreferences(PREFERENCES_USER, MODE_PRIVATE).getInt("USER_ID", 0);
+        return context.getSharedPreferences(PREFERENCES_USER, MODE_PRIVATE).getInt("USER_ID", 20);
     }
 
     public static void setCurrentUserId(Context context, int id) {
@@ -238,7 +235,7 @@ public class NotesFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_colors, menu);
+        inflater.inflate(R.menu.menu_main, menu);
     }
 
     private void editNote(int noteId, List<Note> notes, View sharedView) {
@@ -246,7 +243,7 @@ public class NotesFragment extends Fragment {
     }
 
     private void addNote(int userId) {
-        ((MainActivity) getActivity()).getNavigationManager().showNoteAdd(-1, userId);
+        ((MainActivity) getActivity()).getNavigationManager().showNoteAdd(userId);
     }
 
     private class NoteLoader implements LoaderManager.LoaderCallbacks<List<Note>> {

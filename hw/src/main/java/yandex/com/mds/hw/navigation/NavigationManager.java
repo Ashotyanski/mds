@@ -30,32 +30,34 @@ public class NavigationManager {
 
     public void showNotes() {
         NotesFragment fragment = new NotesFragment();
-        openAsRoot(fragment);
+        openAsRoot(fragment, "NOTES");
     }
 
     public void showNotePager(int notePosition, ArrayList<Note> notes, View sharedView) {
-        NotePagerFragment fragment = NotePagerFragment.newInstance(notePosition, notes, ViewCompat.getTransitionName(sharedView));
-        open(fragment, sharedView);
+        NotePagerFragment fragment = NotePagerFragment.newInstance(notePosition, notes,
+                sharedView == null ? "" : ViewCompat.getTransitionName(sharedView));
+        open(fragment, sharedView, "NOTE_PAGER");
     }
 
-    public void showNoteAdd(int noteId, int userId) {
-        NoteEditFragment fragment = NoteEditFragment.newInstance(noteId, userId, "");
-        open(fragment, null);
+    public void showNoteAdd(int userId) {
+        NoteEditFragment fragment = NoteEditFragment.newInstance(-1, userId, "");
+        open(fragment, null, "NOTE_ADD");
     }
 
     public void showNoteEdit(int noteId, int userId, View sharedView) {
-        NoteEditFragment fragment = NoteEditFragment.newInstance(noteId, userId, ViewCompat.getTransitionName(sharedView));
-        open(fragment, sharedView);
+        NoteEditFragment fragment = NoteEditFragment.newInstance(noteId, userId,
+                sharedView == null ? "" : ViewCompat.getTransitionName(sharedView));
+        open(fragment, sharedView, "NOTE_EDIT");
     }
 
     public void showNotesImportExport() {
         NoteImportExportFragment fragment = new NoteImportExportFragment();
-        openAsRoot(fragment);
+        openAsRoot(fragment, "NOTES_IMPORT_EXPORT");
     }
 
-    private void open(Fragment fragment, View sharedView) {
+    private void open(Fragment fragment, View sharedView, String tag) {
         FragmentTransaction transaction = mFragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragment, fragment.getClass().getName());
+                .replace(R.id.content_frame, fragment, tag);
         if (sharedView != null) {
             transaction.addSharedElement(sharedView, ViewCompat.getTransitionName(sharedView));
             mFragmentManager.getFragments().get(0)
@@ -63,12 +65,12 @@ public class NavigationManager {
             mFragmentManager.getFragments().get(0)
                     .setExitTransition(new Fade(Fade.OUT));
         }
-        transaction.addToBackStack(fragment.getClass().getName()).commit();
+        transaction.addToBackStack(tag).commit();
     }
 
-    private void openAsRoot(Fragment fragment) {
+    private void openAsRoot(Fragment fragment, String tag) {
         popEveryFragment();
-        open(fragment, null);
+        open(fragment, null, tag);
     }
 
     private void popEveryFragment() {

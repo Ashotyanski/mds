@@ -107,7 +107,7 @@ public class NoteEditFragment extends Fragment {
 
         if (arguments != null) {
             if (arguments.getInt(ID, -1) >= 0) {
-                toolbar.setTitle(R.string.title_activity_note_edit);
+                toolbar.setTitle(R.string.title_note_edit);
                 note = noteDao.getNote(arguments.getInt(ID));
                 ownerId = note.getOwnerId();
                 if (savedInstanceState == null) {
@@ -126,11 +126,11 @@ public class NoteEditFragment extends Fragment {
                 ));
             } else {
                 ownerId = arguments.getInt(OWNER_ID, -1);
-                toolbar.setTitle(R.string.title_activity_note_create);
+                toolbar.setTitle(R.string.title_note_create);
             }
         } else {
             ownerId = -1;
-            toolbar.setTitle(R.string.title_activity_note_create);
+            toolbar.setTitle(R.string.title_note_create);
         }
 
         colorView.setOnPickListener(new ColorPickerView.OnPickListener() {

@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.view.View;
 import android.widget.Toast;
 
+import yandex.com.mds.hw.MainActivity;
 import yandex.com.mds.hw.MainApplication;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.utils.NotificationUtils;
@@ -30,6 +32,9 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat implement
         super.onViewCreated(view, savedInstanceState);
         SharedPreferences s = getActivity().getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         importExportFilename = s.getString(IMPORT_EXPORT_FILE_PREFERENCE, DEFAULT_FILENAME);
+
+        ActionBar toolbar = ((MainActivity) getActivity()).getSupportActionBar();
+        toolbar.setTitle(R.string.title_note_import_export);
     }
 
     @Override
@@ -124,7 +129,7 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat implement
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Toast.makeText(getActivity(), R.string.started_notes_import, Toast.LENGTH_SHORT).show();
-                exporter.importColors(importExportFilename);
+                exporter.importNotes(importExportFilename);
                 return true;
             }
         });
@@ -133,7 +138,7 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat implement
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Toast.makeText(getActivity(), R.string.started_notes_export, Toast.LENGTH_SHORT).show();
-                exporter.exportColors(importExportFilename);
+                exporter.exportNotes(importExportFilename);
                 return true;
             }
         });

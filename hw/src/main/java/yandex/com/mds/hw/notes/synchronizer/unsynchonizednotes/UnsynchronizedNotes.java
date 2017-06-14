@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.notes.synchronizer;
+package yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,9 +6,21 @@ import java.util.Map;
 import yandex.com.mds.hw.models.Note;
 
 public class UnsynchronizedNotes {
-    Map<Integer, Note> added = new HashMap<>();
-    Map<Integer, Note> edited = new HashMap<>();
-    Map<Integer, Note> deleted = new HashMap<>();
+    private Map<Integer, Note> added = new HashMap<>();
+    private Map<Integer, Note> edited = new HashMap<>();
+    private Map<Integer, Note> deleted = new HashMap<>();
+
+    public Map<Integer, Note> getAdded() {
+        return added;
+    }
+
+    public Map<Integer, Note> getEdited() {
+        return edited;
+    }
+
+    public Map<Integer, Note> getDeleted() {
+        return deleted;
+    }
 
     public UnsynchronizedNotes extractUnsynchronizedNotesForOwner(int ownerId) {
         UnsynchronizedNotes notes = new UnsynchronizedNotes();

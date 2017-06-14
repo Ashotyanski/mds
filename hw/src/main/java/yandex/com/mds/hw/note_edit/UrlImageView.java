@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -29,6 +30,9 @@ public class UrlImageView extends FrameLayout {
     private TextView textView;
     private String url;
     private UrlImageLoadTask task;
+
+    private OnSuccessListener onSuccessListener;
+    private OnFailureListener onFailureListener;
 
     public UrlImageView(Context context) {
         super(context);
@@ -68,6 +72,7 @@ public class UrlImageView extends FrameLayout {
 
                 final EditText input = new EditText(v.getContext());
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setContentDescription("Image URL");
                 input.setText(url);
                 builder.setView(input);
 
@@ -83,7 +88,7 @@ public class UrlImageView extends FrameLayout {
                         dialog.cancel();
                     }
                 });
-                builder.show();
+                builder.create().show();
             }
         });
     }
@@ -109,6 +114,10 @@ public class UrlImageView extends FrameLayout {
         imageView.setImageBitmap(bitmap);
     }
 
+    public Bitmap getBitmap() {
+        return ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+    }
+
     public void setLoading() {
         imageView.setVisibility(View.GONE);
         textView.setVisibility(View.GONE);
@@ -127,8 +136,20 @@ public class UrlImageView extends FrameLayout {
         if (task != null && (task.getStatus() == AsyncTask.Status.PENDING || task.getStatus() == AsyncTask.Status.RUNNING)) {
             task.cancel(true);
         }
-        task = new UrlImageLoadTask();
-        task.execute(url);
+        if (url.isEmpty()) {
+            setEmpty();
+        } else {
+            task = new UrlImageLoadTask();
+            task.execute(url);
+        }
+    }
+
+    public void setOnSuccessListener(OnSuccessListener onSuccessListener) {
+        this.onSuccessListener = onSuccessListener;
+    }
+
+    public void setOnFailureListener(OnFailureListener onFailureListener) {
+        this.onFailureListener = onFailureListener;
     }
 
     public void applyUrl(String path) {
@@ -163,10 +184,23 @@ public class UrlImageView extends FrameLayout {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
-            if (bitmap != null)
+            if (bitmap != null) {
                 setBitmap(bitmap);
-            else
+                if (onSuccessListener != null)
+                    onSuccessListener.onSuccess();
+            } else {
                 setFailed();
+                if (onFailureListener != null)
+                    onFailureListener.onFailure();
+            }
         }
+    }
+
+    public interface OnSuccessListener {
+        void onSuccess();
+    }
+
+    public interface OnFailureListener {
+        void onFailure();
     }
 }

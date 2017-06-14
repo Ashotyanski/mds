@@ -58,7 +58,8 @@ public class NoteImporterExporter {
         this.context = context;
         noteDao = new NoteDaoImpl();
         dbHelper = NoteDatabaseHelper.getInstance(context);
-        mHandler = new Handler(Looper.myLooper()) {
+        mHandler = new Handler(Looper.getMainLooper()) {
+            //        mHandler = new Handler(Looper.myLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
@@ -77,11 +78,11 @@ public class NoteImporterExporter {
         service = Executors.newSingleThreadExecutor();
     }
 
-    public void exportColors(String filename) {
+    public void exportNotes(String filename) {
         service.execute(new ColorExportTask(filename));
     }
 
-    public void importColors(String filename) {
+    public void importNotes(String filename) {
         service.execute(new ColorImportTask(filename));
     }
 
@@ -176,7 +177,8 @@ public class NoteImporterExporter {
                         writer.flush();
                     }
                 }
-                writer.write(GSON.toJson(records.get(records.size() - 1)));
+                if (records.size() > 0)
+                    writer.write(GSON.toJson(records.get(records.size() - 1)));
                 writer.write("]");
                 writer.flush();
                 writer.close();

@@ -2,24 +2,35 @@ package yandex.com.mds.hw.note_edit.tasks;
 
 import android.os.AsyncTask;
 
-import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizer;
+import java.io.IOException;
+
+import yandex.com.mds.hw.notes.synchronizer.ServerNotesManager;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.models.Note;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.DiskUnsynchronizedNotesManager;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNotesManager;
 
 public class DeleteTask extends AsyncTask<Integer, Void, Void> {
     private NoteDao noteDao;
-    private NoteSynchronizer synchronizer;
+    private ServerNotesManager serverNotesManager;
+    private UnsynchronizedNotesManager unsynchronizedNotesManager;
 
     public DeleteTask(NoteDao noteDao) {
         this.noteDao = noteDao;
-        synchronizer = NoteSynchronizer.getInstance();
+        serverNotesManager = new ServerNotesManager();
+        unsynchronizedNotesManager = new DiskUnsynchronizedNotesManager();
     }
 
     @Override
     protected Void doInBackground(Integer[] params) {
         Note record = noteDao.getNote(params[0]);
         noteDao.deleteNote(params[0]);
-        synchronizer.delete(record);
+        try {
+            serverNotesManager.delete(record);
+        } catch (IOException e) {
+            e.printStackTrace();
+            unsynchronizedNotesManager.putToEdited(record);
+        }
         return null;
     }
 }

@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
 import java.util.Date;
-import java.util.HashMap;
 
 import yandex.com.mds.hw.models.Note;
 
@@ -23,10 +22,11 @@ import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.OWNER_ID;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.SERVER_ID;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.TABLE_NAME;
 import static yandex.com.mds.hw.db.NoteDatabaseHelper.NoteEntry.TITLE;
+import static yandex.com.mds.hw.utils.TimeUtils.trimMilliseconds;
 
 
 public class NoteDatabaseHelper extends SQLiteOpenHelper {
-    public static final String[] ALL_COLUMNS = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE, CREATION_DATE, IMAGE_URL, OWNER_ID, SERVER_ID};
+    public static final String[] ALL_COLUMNS = {_ID, TITLE, DESCRIPTION, COLOR, CREATION_DATE, LAST_MODIFICATION_DATE, LAST_VIEW_DATE, IMAGE_URL, OWNER_ID, SERVER_ID};
     private static final int DATABASE_VERSION = 4;
     private static final String CREATE_QUERY = "CREATE TABLE " + TABLE_NAME + " (" +
             _ID + " INTEGER PRIMARY KEY, " +
@@ -59,6 +59,7 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_QUERY);
+/*
         HashMap<String, Integer> notes = new HashMap<>();
         notes.put("Red", 0xFFFF0000);
         notes.put("Yellow", 0xFFFFFF00);
@@ -75,10 +76,17 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
             db.insert(TABLE_NAME, null, contentValues);
             i++;
         }
+*/
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL(DELETE_QUERY);
+        onCreate(db);
+    }
+
+    public void clean() {
+        SQLiteDatabase db = getWritableDatabase();
         db.execSQL(DELETE_QUERY);
         onCreate(db);
     }
@@ -91,11 +99,11 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(TITLE, note.getTitle());
         contentValues.put(DESCRIPTION, note.getDescription());
         if (note.getCreationDate() != null)
-            contentValues.put(CREATION_DATE, note.getCreationDate().getTime());
+            contentValues.put(CREATION_DATE, trimMilliseconds(note.getCreationDate()).getTime());
         if (note.getLastModificationDate() != null)
-            contentValues.put(LAST_MODIFICATION_DATE, note.getLastModificationDate().getTime());
+            contentValues.put(LAST_MODIFICATION_DATE, trimMilliseconds(note.getLastModificationDate()).getTime());
         if (note.getLastViewDate() != null)
-            contentValues.put(LAST_VIEW_DATE, note.getLastViewDate().getTime());
+            contentValues.put(LAST_VIEW_DATE, trimMilliseconds(note.getLastViewDate()).getTime());
         contentValues.put(IMAGE_URL, note.getImageUrl());
         if (!isUpdate)
             contentValues.put(OWNER_ID, note.getOwnerId());
@@ -109,9 +117,9 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
         note.setColor(cursor.getInt(cursor.getColumnIndex(COLOR)));
         note.setTitle(cursor.getString(cursor.getColumnIndex(TITLE)));
         note.setDescription(cursor.getString(cursor.getColumnIndex(DESCRIPTION)));
-        note.setCreationDate(new Date(cursor.getLong(cursor.getColumnIndex(CREATION_DATE))));
-        note.setLastModificationDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE))));
-        note.setLastViewDate(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE))));
+        note.setCreationDate(trimMilliseconds(new Date(cursor.getLong(cursor.getColumnIndex(CREATION_DATE)))));
+        note.setLastModificationDate(trimMilliseconds(new Date(cursor.getLong(cursor.getColumnIndex(LAST_MODIFICATION_DATE)))));
+        note.setLastViewDate(trimMilliseconds(new Date(cursor.getLong(cursor.getColumnIndex(LAST_VIEW_DATE)))));
         note.setImageUrl(cursor.getString(cursor.getColumnIndex(IMAGE_URL)));
         note.setOwnerId(cursor.getInt(cursor.getColumnIndex(OWNER_ID)));
         note.setServerId(cursor.getInt(cursor.getColumnIndex(SERVER_ID)));

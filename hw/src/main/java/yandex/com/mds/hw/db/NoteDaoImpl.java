@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import yandex.com.mds.hw.MainApplication;
@@ -111,6 +110,8 @@ public class NoteDaoImpl implements NoteDao {
         String[] selectionArgs = {String.valueOf(id)};
         Cursor c = db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
         c.moveToFirst();
+        if (c.getCount() == 0)
+            return null;
         Note result = NoteDatabaseHelper.toRecord(c);
         c.close();
         return result;

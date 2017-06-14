@@ -97,8 +97,6 @@ public class Note implements Parcelable {
         this.title = title;
         this.description = description;
         this.creationDate = creationDate;
-        this.lastModificationDate = creationDate;
-        this.lastViewDate = creationDate;
         this.imageUrl = imageUrl;
         this.ownerId = ownerId;
     }
@@ -180,5 +178,44 @@ public class Note implements Parcelable {
                 ", ownerId=" + ownerId +
                 ", serverId=" + serverId +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Note note = (Note) o;
+
+        if (id != note.id) return false;
+        if (color != note.color) return false;
+        if (ownerId != note.ownerId) return false;
+        if (serverId != note.serverId) return false;
+        if (title != null ? !title.equals(note.title) : note.title != null) return false;
+        if (description != null ? !description.equals(note.description) : note.description != null)
+            return false;
+        if (creationDate != null ? !creationDate.equals(note.creationDate) : note.creationDate != null)
+            return false;
+        if (lastModificationDate != null ? !lastModificationDate.equals(note.lastModificationDate) : note.lastModificationDate != null)
+            return false;
+        if (lastViewDate != null ? !lastViewDate.equals(note.lastViewDate) : note.lastViewDate != null)
+            return false;
+        return imageUrl != null ? imageUrl.equals(note.imageUrl) : note.imageUrl == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + color;
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (creationDate != null ? creationDate.hashCode() : 0);
+        result = 31 * result + (lastModificationDate != null ? lastModificationDate.hashCode() : 0);
+        result = 31 * result + (lastViewDate != null ? lastViewDate.hashCode() : 0);
+        result = 31 * result + (imageUrl != null ? imageUrl.hashCode() : 0);
+        result = 31 * result + ownerId;
+        result = 31 * result + serverId;
+        return result;
     }
 }

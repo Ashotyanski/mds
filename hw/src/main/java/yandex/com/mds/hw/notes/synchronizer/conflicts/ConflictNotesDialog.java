@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.notes.synchronizer;
+package yandex.com.mds.hw.notes.synchronizer.conflicts;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,8 +10,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import yandex.com.mds.hw.R;
-import yandex.com.mds.hw.models.Note;
-import yandex.com.mds.hw.utils.TimeUtils;
+
+import static yandex.com.mds.hw.notes.synchronizer.conflicts.Utils.getNotePresentation;
 
 public class ConflictNotesDialog extends AlertDialog {
     private static final String TAG = ConflictNotesDialog.class.getName();
@@ -28,11 +28,9 @@ public class ConflictNotesDialog extends AlertDialog {
         View root = LayoutInflater.from(context).inflate(R.layout.dialog_conflict_notes, null);
         setView(root);
         localDescription = (TextView) root.findViewById(R.id.text_local);
-        localDescription.setText(conflictNotes.getLocal() == null ? context.getString(R.string.deleted)
-                : getNotePresentation(conflictNotes.getLocal()));
+        localDescription.setText(getNotePresentation(context, conflictNotes.getLocal()));
         remoteDescription = (TextView) root.findViewById(R.id.text_remote);
-        remoteDescription.setText(conflictNotes.getRemote() == null ? context.getString(R.string.deleted)
-                : getNotePresentation(conflictNotes.getRemote()));
+        remoteDescription.setText(getNotePresentation(context, conflictNotes.getRemote()));
 
         preferLocalButton = (Button) root.findViewById(R.id.button_prefer_local);
         preferLocalButton.setOnClickListener(new View.OnClickListener() {
@@ -54,21 +52,6 @@ public class ConflictNotesDialog extends AlertDialog {
 
     public void setOnConflictResolvedListener(OnConflictResolvedListener onConflictResolvedListener) {
         this.conflictResolvedListener = onConflictResolvedListener;
-    }
-
-    private String getNotePresentation(Note note) {
-        String result = "";
-        result += String.format("Title: %s\n", note.getTitle());
-        result += String.format("Description: %s\n", note.getDescription());
-        result += String.format("Color: %s\n", note.getColor());
-        result += String.format("Image: %s\n", note.getImageUrl());
-        result += String.format("Created at: %s\n", note.getCreationDate() != null ?
-                TimeUtils.IsoDateFormat.format(note.getCreationDate()) : "");
-        result += String.format("Edited at: %s\n", note.getLastModificationDate() != null ?
-                TimeUtils.IsoDateFormat.format(note.getLastModificationDate()) : "");
-        result += String.format("Viewed at: %s\n", note.getLastViewDate() != null ?
-                TimeUtils.IsoDateFormat.format(note.getLastViewDate()) : "");
-        return result;
     }
 
     /**

@@ -20,18 +20,20 @@ public class Utils {
     }
 
     public static int getDateFilterFieldPosition(String field) {
-        for (int i = 0; i < ClausesConstants.DATE_FILTER_FIELDS.length; i++) {
-            if (field.equals(ClausesConstants.DATE_FILTER_FIELDS[i]))
-                return i;
-        }
+        if (field != null)
+            for (int i = 0; i < ClausesConstants.DATE_FILTER_FIELDS.length; i++) {
+                if (field.equals(ClausesConstants.DATE_FILTER_FIELDS[i]))
+                    return i;
+            }
         return -1;
     }
 
     public static int getSortFieldPosition(String field) {
-        for (int i = 0; i < ClausesConstants.SORT_FIELDS.length; i++) {
-            if (field.equals(ClausesConstants.SORT_FIELDS[i]))
-                return i;
-        }
+        if (field != null)
+            for (int i = 0; i < ClausesConstants.SORT_FIELDS.length; i++) {
+                if (field.equals(ClausesConstants.SORT_FIELDS[i]))
+                    return i;
+            }
         return -1;
     }
 

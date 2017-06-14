@@ -1,192 +1,133 @@
 package yandex.com.mds.hw.notes.synchronizer;
 
+import android.content.Context;
 import android.util.Log;
+import android.util.SparseArray;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import yandex.com.mds.hw.MainApplication;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.db.NoteDaoImpl;
 import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.network.NoteService;
 import yandex.com.mds.hw.network.NoteServiceResponse;
-import yandex.com.mds.hw.network.ServiceGenerator;
-import yandex.com.mds.hw.utils.NetworkUtils;
-import yandex.com.mds.hw.utils.SerializationUtils;
+import yandex.com.mds.hw.notes.synchronizer.conflicts.ConflictNotes;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNotes;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNotesManager;
+import yandex.com.mds.hw.utils.TimeUtils;
 
 public class NoteSynchronizer {
     private static final String TAG = NoteSynchronizer.class.getName();
-    public static final String SYNC_COMPLETE_ACTION = "SYNC_COMPLETE";
-    private static final String STATUS_ADDED = "added";
-    private static final String STATUS_EDITED = "edited";
-    private static final String STATUS_DELETED = "deleted";
+    private NoteDao noteDao;
+    private UnsynchronizedNotesManager unsynchronizedNotesManager;
+    private ServerNotesManager serverNotesManager;
+    private NoteService noteService;
 
-    private static NoteSynchronizer synchronizer;
-
-    private NoteDao noteDao = new NoteDaoImpl();
-    private File unsynchronizedNotesPath;
-    private NoteService service;
-    private UnsynchronizedNotes unsynchronizedNotes;
-
-    public static NoteSynchronizer getInstance() {
-        if (synchronizer == null)
-            synchronizer = new NoteSynchronizer();
-        return synchronizer;
+    public NoteSynchronizer(Context context, NoteService service, UnsynchronizedNotesManager unsynchronizedNotesManager) {
+        this.unsynchronizedNotesManager = unsynchronizedNotesManager;
+        this.noteService = service;
+        serverNotesManager = new ServerNotesManager(noteService);
+        noteDao = new NoteDaoImpl();
     }
 
-    private NoteSynchronizer() {
-        this.noteDao = new NoteDaoImpl();
-        service = ServiceGenerator.createService(NoteService.class);
-        unsynchronizedNotesPath = new File(
-                MainApplication.getContext().getExternalFilesDir(null), "unsynchronized_notes.json");
-        if (!unsynchronizedNotesPath.exists()) {
+    public ArrayList<ConflictNotes> synchronize(int userId) throws IOException {
+        UnsynchronizedNotes unsynchronizedNotes = unsynchronizedNotesManager.getUnsynchronizedNotes(userId);
+        List<Note> remoteNotes = null;
+        try {
+            NoteServiceResponse<List<Note>> response = noteService.getNotes(userId).execute().body();
+            if (response.getStatus().equals("ok"))
+                remoteNotes = response.getData();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception while parsing response");
+            e.printStackTrace();
+            throw e;
+        }
+        ArrayList<ConflictNotes> conflictNotes = new ArrayList<>();
+        SparseArray<Note> diff = new SparseArray<>();
+        for (Note record : noteDao.getNotes(null, userId))
+            if (record.getServerId() > 0)
+                diff.put(record.getServerId(), record);
+        Log.d(TAG, "synchronize: diff=" + diff.toString());
+        Log.d(TAG, "synchronize: remote=" + remoteNotes.toString());
+
+        //iterate through all remote notes
+        for (Iterator<Note> it = remoteNotes.iterator(); it.hasNext(); ) {
+            Note remoteNote = it.next();
+            if (unsynchronizedNotes.getDeleted().containsKey(remoteNote.getId())) {
+                //if is deleted locally then delete the remote one too
+                Note note = unsynchronizedNotes.getDeleted().get(remoteNote.getId());
+                Log.d(TAG, "Deleting remote note: " + note);
+                try {
+                    serverNotesManager.delete(note);
+                    unsynchronizedNotesManager.remove(note);
+                } catch (IOException e) {
+                    Log.d(TAG, "Exception occurred");
+                    e.printStackTrace();
+                }
+                continue;
+            } else if (unsynchronizedNotes.getEdited().containsKey(remoteNote.getId())) {
+                //if is edited locally
+                Note note = unsynchronizedNotes.getEdited().get(remoteNote.getId());
+                if (remoteNote.getLastModificationDate().getTime() < note.getLastModificationDate().getTime()) {
+                    //and last edit is at a later time than last remote edit, then overwrite
+                    Log.d(TAG, "Overwriting remote note: " + note.toString());
+                    try {
+                        serverNotesManager.save(note);
+                        unsynchronizedNotesManager.remove(note);
+                    } catch (IOException e) {
+                        Log.d(TAG, "Exception occurred");
+                        e.printStackTrace();
+                    }
+                } else if (remoteNote.getLastModificationDate().getTime() > note.getLastModificationDate().getTime()) {
+                    //and last edit is at an earlier time than last remote edit, then it is a conflict
+                    Log.d(TAG, "Conflicting notes:\n" + note.toString() + "\n" + remoteNote.toString());
+                    conflictNotes.add(new ConflictNotes(note, remoteNote));
+                }
+            } else if (findNoteByServerId(userId, remoteNote.getId()) == null) {
+                //if exists remotely but does not locally, then we add it
+                remoteNote.setOwnerId(userId);
+                remoteNote.setServerId(remoteNote.getId());
+                Log.d(TAG, "Adding new note: " + remoteNote.toString());
+                noteDao.addNote(remoteNote);
+            } else {
+                //both exist, we make sure they match
+                Note localPairNote = diff.get(remoteNote.getId());
+                if (isSame(localPairNote, remoteNote))
+                    Log.d(TAG, "Note is synchronized already");
+                else {
+                    Log.d(TAG, "Difference, conflict");
+                    conflictNotes.add(new ConflictNotes(localPairNote, remoteNote));
+                }
+            }
+            diff.remove(remoteNote.getId());
+        }
+
+        // send added notes
+        for (Note note : unsynchronizedNotes.getAdded().values()) {
+            Log.d(TAG, "Sending note: " + note.toString());
             try {
-                unsynchronizedNotesPath.createNewFile();
+                int serverId = serverNotesManager.add(note);
+                note.setServerId(serverId);
+                noteDao.saveNote(note);
+                unsynchronizedNotesManager.remove(note);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.d(TAG, "Exception occurred");
+                throw e;
             }
         }
-        readFromDisk();
-    }
 
-    public UnsynchronizedNotes getUnsynchronizedNotes(int ownerId) {
-        return unsynchronizedNotes.extractUnsynchronizedNotesForOwner(ownerId);
-    }
-
-    public void addAsync(final Note record) {
-        Log.d(TAG, "Add async: " + record.toString());
-        if (NetworkUtils.isConnected()) {
-            service.addNote(record.getOwnerId(), record).enqueue(new Callback<NoteServiceResponse<Integer>>() {
-                @Override
-                public void onResponse(Call<NoteServiceResponse<Integer>> call, Response<NoteServiceResponse<Integer>> response) {
-                    if (response.body() != null && response.body().getStatus().equals("ok")) {
-                        record.setServerId(response.body().getData());
-                        noteDao.saveNote(record);
-                        removeIfExists(record);
-                    } else
-                        addToCache(record, STATUS_ADDED);
-                }
-
-                @Override
-                public void onFailure(Call<NoteServiceResponse<Integer>> call, Throwable t) {
-                    addToCache(record, STATUS_ADDED);
-                }
-            });
-        } else {
-            addToCache(record, STATUS_ADDED);
+        // locally present but not represented at remote - we consider them deleted at remote
+        // and thereby conflicting (these include both edited and already synchronized)
+        for (int i = 0; i < diff.size(); i++) {
+            conflictNotes.add(new ConflictNotes(diff.valueAt(i), null));
         }
+        return conflictNotes;
     }
 
-    public void add(Note record) {
-        Log.d(TAG, "Add: " + record.toString());
-        if (NetworkUtils.isConnected()) {
-            try {
-                NoteServiceResponse<Integer> response = service.addNote(record.getOwnerId(), record).execute().body();
-                if (response.getStatus().equals("ok")) {
-                    record.setServerId(response.getData());
-                    noteDao.saveNote(record);
-                    removeIfExists(record);
-                } else throw new RuntimeException();
-            } catch (Exception e) {
-                addToCache(record, STATUS_ADDED);
-                e.printStackTrace();
-            }
-        } else {
-            addToCache(record, STATUS_ADDED);
-        }
-    }
-
-    public void saveAsync(final Note record) {
-        Log.d(TAG, "Save async: " + record.toString());
-        if (NetworkUtils.isConnected()) {
-            service.saveNote(record.getOwnerId(), record.getServerId(), record).enqueue(new Callback<NoteServiceResponse>() {
-                @Override
-                public void onResponse(Call<NoteServiceResponse> call, Response<NoteServiceResponse> response) {
-                    if (response.body() != null && response.body().getStatus().equals("ok"))
-                        removeIfExists(record);
-                    else
-                        addToCache(record, STATUS_EDITED);
-                }
-
-                @Override
-                public void onFailure(Call<NoteServiceResponse> call, Throwable t) {
-                    addToCache(record, STATUS_EDITED);
-                }
-            });
-        } else {
-            addToCache(record, STATUS_EDITED);
-        }
-    }
-
-    public void save(Note record) {
-        Log.d(TAG, "Save: " + record.toString());
-        if (NetworkUtils.isConnected()) {
-            try {
-                NoteServiceResponse response = service.saveNote(record.getOwnerId(), record.getServerId(), record).execute().body();
-                if (response.getStatus().equals("ok")) {
-                    removeIfExists(record);
-                } else {
-                    throw new RuntimeException();
-                }
-            } catch (Exception e) {
-                addToCache(record, STATUS_EDITED);
-                e.printStackTrace();
-            }
-        } else {
-            addToCache(record, STATUS_EDITED);
-        }
-    }
-
-    public void deleteAsync(final Note record) {
-        Log.d(TAG, "Delete async: " + record.toString());
-        if (NetworkUtils.isConnected()) {
-            service.deleteNote(record.getOwnerId(), record.getServerId()).enqueue(new Callback<NoteServiceResponse>() {
-                @Override
-                public void onResponse(Call<NoteServiceResponse> call, Response<NoteServiceResponse> response) {
-                    if (response.body() != null && response.body().getStatus().equals("ok"))
-                        removeIfExists(record);
-                    else
-                        addToCache(record, STATUS_DELETED);
-                }
-
-                @Override
-                public void onFailure(Call<NoteServiceResponse> call, Throwable t) {
-                    addToCache(record, STATUS_DELETED);
-                }
-            });
-        } else {
-            addToCache(record, STATUS_DELETED);
-        }
-    }
-
-    public void delete(Note record) {
-        Log.d(TAG, "Delete: " + record.toString());
-        if (NetworkUtils.isConnected()) {
-            try {
-                NoteServiceResponse response = service.deleteNote(record.getOwnerId(), record.getServerId()).execute().body();
-                if (response.getStatus().equals("ok")) {
-                    removeIfExists(record);
-                } else {
-                    throw new RuntimeException();
-                }
-            } catch (Exception e) {
-                addToCache(record, STATUS_DELETED);
-                e.printStackTrace();
-            }
-        } else {
-            addToCache(record, STATUS_DELETED);
-        }
-    }
-
-    public Note findNoteByServerId(int ownerId, int serverId) {
+    private Note findNoteByServerId(int ownerId, int serverId) {
         List<Note> records = noteDao.getNotes(null, ownerId);
         for (Note record : records)
             if (record.getServerId() == serverId)
@@ -194,81 +135,39 @@ public class NoteSynchronizer {
         return null;
     }
 
-    public void clearCache() {
-        setUnsynchronizedNotes(null);
-    }
-
-
-    private void addToCache(Note record, String status) {
-        Log.d(TAG, "Caching: " + status + " - " + record.toString());
-        switch (status) {
-            case STATUS_ADDED: {
-                unsynchronizedNotes.added.put(record.getId(), record);
-                break;
-            }
-            case STATUS_EDITED: {
-                if (unsynchronizedNotes.added.containsKey(record.getId())) {
-                    unsynchronizedNotes.added.put(record.getId(), record);
-                } else unsynchronizedNotes.edited.put(record.getServerId(), record);
-                break;
-            }
-            case STATUS_DELETED: {
-                if (unsynchronizedNotes.added.containsKey(record.getId()))
-                    unsynchronizedNotes.added.remove(record.getId());
-                else if (unsynchronizedNotes.edited.containsKey(record.getServerId()))
-                    unsynchronizedNotes.edited.remove(record.getServerId());
-                else unsynchronizedNotes.deleted.put(record.getServerId(), record);
-                break;
-            }
-        }
-        writeToDisk();
-        readFromDisk();
-    }
-
-    private void removeIfExists(Note note) {
-        unsynchronizedNotes.added.remove(note.getId());
-        unsynchronizedNotes.edited.remove(note.getServerId());
-        unsynchronizedNotes.deleted.remove(note.getServerId());
-    }
-
-    void readFromDisk() {
-        try (FileReader reader = new FileReader(unsynchronizedNotesPath)) {
-            UnsynchronizedNotes newUnsynchronizedNotes =
-                    SerializationUtils.GSON.fromJson(reader, UnsynchronizedNotes.class);
-            this.unsynchronizedNotes = newUnsynchronizedNotes == null ? new UnsynchronizedNotes() : newUnsynchronizedNotes;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void writeToDisk() {
-        try (FileWriter writer = new FileWriter(unsynchronizedNotesPath)) {
-            SerializationUtils.GSON.toJson(unsynchronizedNotes, writer);
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private UnsynchronizedNotes getUnsynchronizedNotes() {
-        FileReader reader = null;
-        try {
-            reader = new FileReader(unsynchronizedNotesPath);
-            UnsynchronizedNotes unsynchronizedNotes =
-                    SerializationUtils.GSON.fromJson(reader, UnsynchronizedNotes.class);
-            return unsynchronizedNotes == null ? new UnsynchronizedNotes() : unsynchronizedNotes;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return new UnsynchronizedNotes();
-    }
-
-    private void setUnsynchronizedNotes(UnsynchronizedNotes unsynchronizedNotes) {
-        try (FileWriter writer = new FileWriter(unsynchronizedNotesPath)) {
-            SerializationUtils.GSON.toJson(unsynchronizedNotes, writer);
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    static boolean isSame(Note local, Note remote) {
+        //color
+        if (local.getColor() != remote.getColor())
+            return false;
+        //title
+        local.setTitle(local.getTitle() == null ? "" : local.getTitle());
+        remote.setTitle(remote.getTitle() == null ? "" : remote.getTitle());
+        if (!local.getTitle().equals(remote.getTitle()))
+            return false;
+        //description
+        local.setDescription(local.getDescription() == null ? "" : local.getDescription());
+        remote.setDescription(remote.getDescription() == null ? "" : remote.getDescription());
+        if (!local.getDescription().equals(remote.getDescription()))
+            return false;
+        //image
+        local.setImageUrl(local.getImageUrl() == null ? "" : local.getImageUrl());
+        remote.setImageUrl(remote.getImageUrl() == null ? "" : remote.getImageUrl());
+        if (!local.getImageUrl().equals(remote.getImageUrl()))
+            return false;
+        //creation date
+        if (local.getCreationDate() == null ^ remote.getCreationDate() == null)
+            return false;
+        if ((local.getCreationDate() != null && remote.getCreationDate() != null) &&
+                TimeUtils.trimMilliseconds(local.getCreationDate()).getTime()
+                        != TimeUtils.trimMilliseconds(remote.getCreationDate()).getTime())
+            return false;
+        //last modification date
+        if (local.getLastModificationDate() == null ^ remote.getLastModificationDate() == null)
+            return false;
+        if ((local.getLastModificationDate() != null && remote.getLastModificationDate() != null) &&
+                TimeUtils.trimMilliseconds(local.getLastModificationDate()).getTime()
+                        != TimeUtils.trimMilliseconds(remote.getLastModificationDate()).getTime())
+            return false;
+        return true;
     }
 }

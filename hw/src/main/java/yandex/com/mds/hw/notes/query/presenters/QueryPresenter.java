@@ -28,6 +28,7 @@ import java.util.Map;
 
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.notes.query.Query;
+import yandex.com.mds.hw.utils.SerializationUtils;
 
 public class QueryPresenter {
     private static final String TAG = QueryPresenter.class.getName();
@@ -223,12 +224,12 @@ public class QueryPresenter {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES_KEY, Context.MODE_PRIVATE);
         Query query = getQuery();
         Log.d(TAG, String.format("Saving query %s into %s", query, title));
-        preferences.edit().putString(title, Query.serialize(query)).apply();
+        preferences.edit().putString(title, SerializationUtils.GSON.toJson(query)).apply();
     }
 
     private Query getQuery(String title) {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES_KEY, Context.MODE_PRIVATE);
-        Query query = Query.deserialize(preferences.getString(title, null));
+        Query query = SerializationUtils.GSON.fromJson(preferences.getString(title, null), Query.class);
         Log.d(TAG, String.format("Got query %s from %s", query, title));
         return query;
     }

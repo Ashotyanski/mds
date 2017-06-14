@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.notes.synchronizer;
+package yandex.com.mds.hw.notes.synchronizer.conflicts;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,10 @@ import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.db.NoteDaoImpl;
+import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService;
+import yandex.com.mds.hw.notes.synchronizer.ServerNotesManager;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.DiskUnsynchronizedNotesManager;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNotesManager;
 
 public class SyncConflictFragment extends DialogFragment {
     private static final String TAG = SyncConflictFragment.class.getName();
@@ -29,7 +34,8 @@ public class SyncConflictFragment extends DialogFragment {
     private ListView listView;
     private ArrayList<ConflictNotes> conflictNotes;
     private NoteDao noteDao;
-    private NoteSynchronizer synchronizer;
+    private ServerNotesManager serverNotesManager;
+    private UnsynchronizedNotesManager unsynchronizedNotesManager;
 
     private OnAllConflictsResolvedListener conflictsResolvedListener;
 
@@ -50,13 +56,15 @@ public class SyncConflictFragment extends DialogFragment {
         conflictNotes = getArguments().getParcelableArrayList(NoteSynchronizationService.SYNC_CONFLICT_NOTES);
         Log.d(TAG, conflictNotes.toString());
         noteDao = new NoteDaoImpl();
-        synchronizer = NoteSynchronizer.getInstance();
+        serverNotesManager = new ServerNotesManager();
+        unsynchronizedNotesManager = new DiskUnsynchronizedNotesManager();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         listView = new ListView(getActivity());
+        listView.setContentDescription("Conflict notes");
         return listView;
     }
 
@@ -69,12 +77,10 @@ public class SyncConflictFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
                 final ConflictNotes conflictNotes = ((ConflictNotesAdapter.ViewHolder) view.getTag()).getConflictNotes();
-                ConflictNotesDialog dialog = new ConflictNotesDialog(getActivity(),
-                        conflictNotes);
+                ConflictNotesDialog dialog = new ConflictNotesDialog(getActivity(), conflictNotes);
                 dialog.setOnConflictResolvedListener(new ConflictNotesDialog.OnConflictResolvedListener() {
                     @Override
                     public void onConflictResolved(int result) {
-                        ((ConflictNotesAdapter) listView.getAdapter()).remove(conflictNotes);
                         if (result > 0) {
                             if (conflictNotes.getRemote() == null)
                                 noteDao.deleteNote(conflictNotes.getLocal().getId());
@@ -87,13 +93,50 @@ public class SyncConflictFragment extends DialogFragment {
                                     noteDao.saveNote(conflictNotes.getRemote());
                                 }
                             }
+                            ((ConflictNotesAdapter) listView.getAdapter()).remove(conflictNotes);
                         } else if (result < 0) {
                             if (conflictNotes.getLocal() == null)
-                                synchronizer.deleteAsync(conflictNotes.getRemote());
+                                serverNotesManager.deleteAsync(conflictNotes.getRemote(), new ServerNotesManager.ActionCallback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void response) {
+                                        unsynchronizedNotesManager.remove(conflictNotes.getRemote());
+                                        ((ConflictNotesAdapter) listView.getAdapter()).remove(conflictNotes);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(getContext(), R.string.conflict_resolve_error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             else if (conflictNotes.getRemote() == null)
-                                synchronizer.addAsync(conflictNotes.getLocal());
+                                serverNotesManager.addAsync(conflictNotes.getLocal(), new ServerNotesManager.ActionCallback<Integer>() {
+                                    @Override
+                                    public void onSuccess(Integer response) {
+                                        unsynchronizedNotesManager.remove(conflictNotes.getRemote());
+                                        ((ConflictNotesAdapter) listView.getAdapter()).remove(conflictNotes);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(getContext(), R.string.conflict_resolve_error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             else {
-                                synchronizer.saveAsync(conflictNotes.getLocal());
+                                serverNotesManager.saveAsync(conflictNotes.getLocal(), new ServerNotesManager.ActionCallback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void response) {
+                                        unsynchronizedNotesManager.remove(conflictNotes.getRemote());
+                                        ((ConflictNotesAdapter) listView.getAdapter()).remove(conflictNotes);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(getContext(), R.string.conflict_resolve_error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
                         }
                         if (listView.getAdapter().isEmpty()) {

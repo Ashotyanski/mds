@@ -10,9 +10,8 @@
         android:title="@string/pref_title_import_export_file" />
     <Preference
         android:key="export_notes"
-        android:title="Export notes" />
+        android:title="@string/pref_title_export" />
     <Preference
         android:key="import_notes"
-        android:title="Import notes" />
-
+        android:title="@string/pref_title_import" />
 </PreferenceScreen>
