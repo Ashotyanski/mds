@@ -11,9 +11,10 @@ import android.widget.Button;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.colorpicker.colorview.ColorView;
 
+/**
+ * Dialog that shows a colorpicker
+ */
 public class ColorPickerDialog extends AlertDialog {
-    private static final String COLOR = "COLOR";
-
     private ColorPickerView colorPickerView;
     private ColorView resultColor;
     private Button pickButton;
@@ -27,7 +28,7 @@ public class ColorPickerDialog extends AlertDialog {
     public ColorPickerDialog(@NonNull Context context, @StyleRes int themeResId, int color, OnColorSavedListener colorSavedListener) {
         super(context, themeResId);
         mColorSavedListener = colorSavedListener;
-        View root = LayoutInflater.from(getContext()).inflate(R.layout.fragment_color_picker_dialog, null);
+        View root = LayoutInflater.from(getContext()).inflate(R.layout.dialog_color_picker, null);
         setView(root);
         colorPickerView = (ColorPickerView) root.findViewById(R.id.color_picker_view);
         resultColor = (ColorView) root.findViewById(R.id.color_view);

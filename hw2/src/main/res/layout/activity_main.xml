@@ -9,7 +9,7 @@
     tools:context="yandex.com.mds.hw2.MainActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:conflictNotes="@+conflictNotes/textView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -17,7 +17,7 @@
         android:textSize="24sp" />
 
     <GridLayout
-        android:id="@+id/colors_grid"
+        android:conflictNotes="@+conflictNotes/colors_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"

@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
     <yandex.com.mds.hw3.colorpicker.colorview.CircleColorView
-        android:id="@+id/colorFilter"
+        android:conflictNotes="@+conflictNotes/colorFilter"
         android:layout_width="@dimen/circle_color_width"
         android:layout_height="@dimen/circle_color_height"
         android:layout_margin="@dimen/circle_color_margin" />
@@ -19,7 +19,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/title"
+            android:conflictNotes="@+conflictNotes/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
@@ -29,7 +29,7 @@
             android:textSize="@dimen/title_text_size" />
 
         <TextView
-            android:id="@+id/description"
+            android:conflictNotes="@+conflictNotes/description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
