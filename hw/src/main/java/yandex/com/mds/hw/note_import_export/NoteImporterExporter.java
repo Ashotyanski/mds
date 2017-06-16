@@ -65,11 +65,11 @@ public class NoteImporterExporter {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case IMPORT_FLAG: {
-                        importListener.OnColorsImport((ImportExportStatus) msg.obj);
+                        importListener.onColorsImport((ImportExportStatus) msg.obj);
                         break;
                     }
                     case EXPORT_FLAG: {
-                        exportListener.OnColorsExport((ImportExportStatus) msg.obj);
+                        exportListener.onColorsExport((ImportExportStatus) msg.obj);
                         break;
                     }
                 }
@@ -202,11 +202,11 @@ public class NoteImporterExporter {
     }
 
     interface OnColorsExportListener {
-        void OnColorsExport(ImportExportStatus progress);
+        void onColorsExport(ImportExportStatus progress);
     }
 
     interface OnColorsImportListener {
-        void OnColorsImport(ImportExportStatus progress);
+        void onColorsImport(ImportExportStatus progress);
     }
 
     class ImportExportStatus {

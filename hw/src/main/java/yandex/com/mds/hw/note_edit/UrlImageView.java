@@ -52,17 +52,18 @@ public class UrlImageView extends FrameLayout {
     private void init(Context context) {
         imageView = new ImageView(context);
         imageView.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        imageView.setVisibility(View.GONE);
         addView(imageView);
 
         progressBar = new ProgressBar(context);
         progressBar.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        progressBar.setVisibility(View.GONE);
         addView(progressBar);
 
         textView = new TextView(context);
         textView.setGravity(Gravity.CENTER);
+        textView.setText(R.string.url_image_status_empty);
         addView(textView);
-
-        setEmpty();
 
         setOnClickListener(new View.OnClickListener() {
             @Override

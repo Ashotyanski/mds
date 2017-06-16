@@ -13,14 +13,12 @@ import yandex.com.mds.hw.notes.query.clauses.ColorFilter;
 
 public class ColorFilterPresenter {
     private Context mContext;
-    private ViewGroup root;
 
     private CircleColorView colorView;
     private Switch colorSwitch;
 
     public ColorFilterPresenter(final Context context, ViewGroup root) {
         mContext = context;
-        this.root = root;
         colorView = (CircleColorView) root.findViewById(R.id.filter_color);
         colorView.setOnClickListener(new View.OnClickListener() {
             @Override

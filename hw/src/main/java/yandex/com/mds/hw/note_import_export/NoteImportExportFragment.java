@@ -52,7 +52,7 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat implement
         exporter = NoteImporterExporter.getInstance(getActivity());
         exporter.setImportListener(new NoteImporterExporter.OnColorsImportListener() {
             @Override
-            public void OnColorsImport(NoteImporterExporter.ImportExportStatus status) {
+            public void onColorsImport(NoteImporterExporter.ImportExportStatus status) {
                 Notification.Builder builder = NotificationUtils
                         .initNotificationBuilder(R.drawable.ic_import_export, "Notes import", status.message);
                 if (status.progress == 0.0) {
@@ -89,7 +89,7 @@ public class NoteImportExportFragment extends PreferenceFragmentCompat implement
         });
         exporter.setExportListener(new NoteImporterExporter.OnColorsExportListener() {
             @Override
-            public void OnColorsExport(NoteImporterExporter.ImportExportStatus status) {
+            public void onColorsExport(NoteImporterExporter.ImportExportStatus status) {
                 Notification.Builder builder = NotificationUtils
                         .initNotificationBuilder(R.drawable.ic_import_export, "Notes export", status.message);
                 if (status.progress == 0.0) {

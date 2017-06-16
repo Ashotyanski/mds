@@ -5,12 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.content.LocalBroadcastManager;
-
-import com.robotium.solo.Solo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,13 +54,11 @@ public class NoteSynchronizationServiceTest {
     private Note note2;
     private Date now, later;
     private int userId;
-    private Solo mSolo;
     private CountDownLatch latch;
     private BroadcastReceiver receiver;
 
     @Before
     public void setUp() throws Exception {
-        mSolo = new Solo(InstrumentationRegistry.getInstrumentation(), mActivityRule.getActivity());
         noteDao = new NoteDaoImpl();
         noteDao.deleteNotes();
         unsynchronizedNotesManager = new DiskUnsynchronizedNotesManager();

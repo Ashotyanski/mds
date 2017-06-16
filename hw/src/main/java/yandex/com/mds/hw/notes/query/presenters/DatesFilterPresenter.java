@@ -46,11 +46,13 @@ public class DatesFilterPresenter {
 
     private void init() {
         dateTypeSpinner = (Spinner) root.findViewById(R.id.spinner_filter_date_type);
-        SpinnerAdapter typeSpinnerAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, ClausesConstants.DATE_FILTER_TYPES);
+        SpinnerAdapter typeSpinnerAdapter = new ArrayAdapter<>(context,
+                android.R.layout.simple_spinner_item, ClausesConstants.DATE_FILTER_TYPES);
         dateTypeSpinner.setAdapter(typeSpinnerAdapter);
 
         dateFieldSpinner = (Spinner) root.findViewById(R.id.spinner_filter_date_field);
-        SpinnerAdapter fieldSpinnerAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, ClausesConstants.DATE_FILTER_FIELDS);
+        SpinnerAdapter fieldSpinnerAdapter = new ArrayAdapter<>(context,
+                android.R.layout.simple_spinner_item, ClausesConstants.DATE_FILTER_FIELDS);
         dateFieldSpinner.setAdapter(fieldSpinnerAdapter);
 
         dateFrom = (TextView) root.findViewById(R.id.filter_date_from);

@@ -10,12 +10,10 @@ import yandex.com.mds.hw.models.Note;
 
 public class NotePagerAdapter extends FragmentStatePagerAdapter {
     private List<Note> notes;
-    private String transition;
 
-    public NotePagerAdapter(FragmentManager fm, List<Note> notes, String transition) {
+    public NotePagerAdapter(FragmentManager fm, List<Note> notes) {
         super(fm);
         this.notes = notes;
-        this.transition = transition;
     }
 
     @Override

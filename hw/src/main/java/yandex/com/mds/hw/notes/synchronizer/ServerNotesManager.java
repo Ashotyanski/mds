@@ -89,7 +89,7 @@ public class ServerNotesManager {
     }
 
     public void delete(Note record) throws IOException {
-        Log.d(TAG, "Delete: " + record.toString());
+        Log.d(TAG, "Delete: " + record);
         NoteServiceResponse response = service.deleteNote(record.getOwnerId(), record.getServerId()).execute().body();
         if (response == null || !response.getStatus().equals("ok")) {
             throw new UnknownServiceException();

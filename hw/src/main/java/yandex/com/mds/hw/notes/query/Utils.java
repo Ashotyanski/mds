@@ -21,8 +21,8 @@ public class Utils {
 
     public static int getDateFilterFieldPosition(String field) {
         if (field != null)
-            for (int i = 0; i < ClausesConstants.DATE_FILTER_FIELDS.length; i++) {
-                if (field.equals(ClausesConstants.DATE_FILTER_FIELDS[i]))
+            for (int i = 0; i < ClausesConstants.DATE_FILTER_FIELDS.size(); i++) {
+                if (field.equals(ClausesConstants.DATE_FILTER_FIELDS.get(i)))
                     return i;
             }
         return -1;
@@ -30,8 +30,8 @@ public class Utils {
 
     public static int getSortFieldPosition(String field) {
         if (field != null)
-            for (int i = 0; i < ClausesConstants.SORT_FIELDS.length; i++) {
-                if (field.equals(ClausesConstants.SORT_FIELDS[i]))
+            for (int i = 0; i < ClausesConstants.SORT_FIELDS.size(); i++) {
+                if (field.equals(ClausesConstants.SORT_FIELDS.get(i)))
                     return i;
             }
         return -1;

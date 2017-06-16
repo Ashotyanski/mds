@@ -113,7 +113,7 @@ public class SyncConflictFragment extends DialogFragment {
                                 serverNotesManager.addAsync(conflictNotes.getLocal(), new ServerNotesManager.ActionCallback<Integer>() {
                                     @Override
                                     public void onSuccess(Integer response) {
-                                        unsynchronizedNotesManager.remove(conflictNotes.getRemote());
+                                        unsynchronizedNotesManager.remove(conflictNotes.getLocal());
                                         ((ConflictNotesAdapter) listView.getAdapter()).remove(conflictNotes);
                                     }
 

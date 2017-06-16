@@ -18,8 +18,6 @@ import java.util.List;
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.models.Note;
 
-import static yandex.com.mds.hw.note_edit.NoteEditFragment.TRANSITION_NAME;
-
 public class NotePagerFragment extends Fragment {
     private static final String TAG = NotePagerFragment.class.getName();
     private ViewPager pager;
@@ -28,11 +26,10 @@ public class NotePagerFragment extends Fragment {
     public NotePagerFragment() {
     }
 
-    public static NotePagerFragment newInstance(int notePosition, ArrayList<Note> notes, String transitionName) {
+    public static NotePagerFragment newInstance(int notePosition, ArrayList<Note> notes) {
         Bundle args = new Bundle();
         args.putInt("NOTE_POS", notePosition);
         args.putParcelableArrayList("NOTES", notes);
-        args.putString(TRANSITION_NAME, transitionName);
         NotePagerFragment fragment = new NotePagerFragment();
         fragment.setArguments(args);
         return fragment;
@@ -69,8 +66,7 @@ public class NotePagerFragment extends Fragment {
         int currentPos = args.getInt("NOTE_POS");
         List<Note> notes = args.getParcelableArrayList("NOTES");
         pager = (ViewPager) view.findViewById(R.id.pager);
-        String transitionName = args.getString(TRANSITION_NAME);
-        adapter = new NotePagerAdapter(getChildFragmentManager(), notes, transitionName);
+        adapter = new NotePagerAdapter(getChildFragmentManager(), notes);
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -86,8 +82,6 @@ public class NotePagerFragment extends Fragment {
         TabLayout tabs = (TabLayout) view.findViewById(R.id.tabs);
         tabs.setupWithViewPager(pager, true);
         tabs.setTabMode(TabLayout.MODE_SCROLLABLE);
-//        tabs.sc
-//        tabs.setTabMode(TabLayout.MODE_FIXED);
         return view;
     }
 }

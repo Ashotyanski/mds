@@ -1,9 +1,17 @@
 package yandex.com.mds.hw.notes.query.clauses;
 
-public class ClausesConstants {
-    public static final String[] DATE_FILTER_TYPES = {"exact date", "date interval"};
-    public static final String[] DATE_FILTER_FIELDS = {"creation date", "last modification date", "last view date"};
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-    public static final String[] SORT_FIELDS = {"title", "creation date", "last modification date", "last view date"};
-    public static final String[] SORT_ORDER = {"descending", "ascending"};
+public class ClausesConstants {
+    public static final List<String> DATE_FILTER_TYPES = Collections.unmodifiableList(
+            Arrays.asList("exact date", "date interval"));
+    public static final List<String> DATE_FILTER_FIELDS = Collections.unmodifiableList(
+            Arrays.asList("creation date", "last modification date", "last view date"));
+
+    public static final List<String> SORT_FIELDS = Collections.unmodifiableList(
+            Arrays.asList("title", "creation date", "last modification date", "last view date"));
+    public static final List<String> SORT_ORDER = Collections.unmodifiableList(
+            Arrays.asList("descending", "ascending"));
 }

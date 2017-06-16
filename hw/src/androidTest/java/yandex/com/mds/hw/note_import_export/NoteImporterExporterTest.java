@@ -63,7 +63,7 @@ public class NoteImporterExporterTest {
         latch = new CountDownLatch(1);
         exporter.setExportListener(new NoteImporterExporter.OnColorsExportListener() {
             @Override
-            public void OnColorsExport(NoteImporterExporter.ImportExportStatus status) {
+            public void onColorsExport(NoteImporterExporter.ImportExportStatus status) {
                 if (status.progress == 1.0)
                     latch.countDown();
                 else if (status.progress < 0)
@@ -76,7 +76,7 @@ public class NoteImporterExporterTest {
         latch = new CountDownLatch(1);
         exporter.setImportListener(new NoteImporterExporter.OnColorsImportListener() {
             @Override
-            public void OnColorsImport(NoteImporterExporter.ImportExportStatus status) {
+            public void onColorsImport(NoteImporterExporter.ImportExportStatus status) {
                 if (status.progress == 1.0)
                     latch.countDown();
                 else if (status.progress < 0)

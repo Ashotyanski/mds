@@ -1,12 +1,14 @@
 package yandex.com.mds.hw.navigation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewCompat;
 import android.transition.Fade;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
 
@@ -24,7 +26,7 @@ public class NavigationManager {
     public NavigationManager(FragmentManager fragmentManager) {
         this.mFragmentManager = fragmentManager;
         if (mFragmentManager.getBackStackEntryCount() == 0) {
-            showNotes();
+            open(new NotesFragment(), null, "NOTES");
         }
     }
 
@@ -34,8 +36,9 @@ public class NavigationManager {
     }
 
     public void showNotePager(int notePosition, ArrayList<Note> notes, View sharedView) {
-        NotePagerFragment fragment = NotePagerFragment.newInstance(notePosition, notes,
-                sharedView == null ? "" : ViewCompat.getTransitionName(sharedView));
+        NotePagerFragment fragment = NotePagerFragment.newInstance(notePosition, notes//,
+                //        sharedView == null ? "" : ViewCompat.getTransitionName(sharedView)
+        );
         open(fragment, sharedView, "NOTE_PAGER");
     }
 
@@ -85,6 +88,12 @@ public class NavigationManager {
         if (mFragmentManager.getBackStackEntryCount() == 0) {
             baseActivity.finish();
         } else {
+            View view = baseActivity.getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) baseActivity
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
             mFragmentManager.popBackStack();
         }
     }

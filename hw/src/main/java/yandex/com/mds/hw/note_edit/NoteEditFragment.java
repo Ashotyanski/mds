@@ -151,12 +151,16 @@ public class NoteEditFragment extends Fragment {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (note != null) {
-                    saveRecord();
+                if (titleView.getText() != null && titleView.getText().length() != 0) {
+                    if (note != null) {
+                        saveRecord();
+                    } else {
+                        addRecord();
+                    }
+                    ((MainActivity) getActivity()).getNavigationManager().navigateBack(getActivity());
                 } else {
-                    addRecord();
+                    titleView.setError("Title cannot be empty");
                 }
-                getActivity().onBackPressed();
             }
         });
         return view;
@@ -167,7 +171,6 @@ public class NoteEditFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         String transitionName = getArguments().getString(TRANSITION_NAME);
         ViewCompat.setTransitionName(colorView, transitionName);
-//        colorView.setTransitionName(transitionName);
         startPostponedEnterTransition();
     }
 
@@ -209,9 +212,8 @@ public class NoteEditFragment extends Fragment {
         if (item.getItemId() == R.id.action_delete) {
             if (note != null) {
                 deleteRecord();
-                //// TODO: 21.05.2017 get the fuck outta here
             }
-            getActivity().onBackPressed();
+            ((MainActivity) getActivity()).getNavigationManager().navigateBack(getActivity());
             return true;
         }
         return super.onOptionsItemSelected(item);

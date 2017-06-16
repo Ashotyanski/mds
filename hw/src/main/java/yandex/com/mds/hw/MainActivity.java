@@ -60,10 +60,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void initDrawer() {
         drawer = (MainDrawerLayout) findViewById(R.id.drawer_layout);
-        toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
@@ -80,9 +76,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-                initDrawerButton();
+                initToggle();
             }
         });
+        initToggle();
 
         userIdView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.user_id);
         userIdView.setText(String.format("%s #%d", "User", getCurrentUserId(this)));
@@ -110,9 +107,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dialog.show();
             }
         });
+        drawer.closeDrawers();
     }
 
-    private void initDrawerButton() {
+    private void initToggle() {
+        toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
         if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
             toggle.setDrawerIndicatorEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);// show back button
@@ -124,22 +125,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
         } else {
             //show hamburger
-            toggle.setDrawerIndicatorEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            toggle.syncState();
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    drawer.openDrawer(GravityCompat.START);
-                }
-            });
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                toggle.setDrawerIndicatorEnabled(true);
+                toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        drawer.openDrawer(GravityCompat.START);
+                    }
+                });
+                drawer.closeDrawers();
+            } else {
+                toggle.setDrawerIndicatorEnabled(false);
+            }
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        initDrawerButton();
+        toggle.syncState();
     }
 
     @Override
