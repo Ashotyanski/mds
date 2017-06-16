@@ -1,11 +1,13 @@
 package yandex.com.mds.hw.notes.synchronizer.conflicts;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,13 +33,12 @@ import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNot
 public class SyncConflictFragment extends DialogFragment {
     private static final String TAG = SyncConflictFragment.class.getName();
 
+    public static final String CONFLICTS_RESOLVED_ACTION = "CONFLICTS_RESOLVED";
     private ListView listView;
     private ArrayList<ConflictNotes> conflictNotes;
     private NoteDao noteDao;
     private ServerNotesManager serverNotesManager;
     private UnsynchronizedNotesManager unsynchronizedNotesManager;
-
-    private OnAllConflictsResolvedListener conflictsResolvedListener;
 
     public SyncConflictFragment() {
     }
@@ -140,7 +141,8 @@ public class SyncConflictFragment extends DialogFragment {
                             }
                         }
                         if (listView.getAdapter().isEmpty()) {
-                            conflictsResolvedListener.onAllConflictsResolved();
+                            LocalBroadcastManager.getInstance(getContext()).sendBroadcast(
+                                    new Intent(CONFLICTS_RESOLVED_ACTION));
                             dismiss();
                         }
                     }
@@ -148,15 +150,6 @@ public class SyncConflictFragment extends DialogFragment {
                 dialog.show();
             }
         });
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnAllConflictsResolvedListener)
-            conflictsResolvedListener = (OnAllConflictsResolvedListener) context;
-        else
-            throw new RuntimeException("Context must implement " + OnAllConflictsResolvedListener.class.getName());
     }
 
     private static class ConflictNotesAdapter extends ArrayAdapter<ConflictNotes> {
@@ -204,9 +197,5 @@ public class SyncConflictFragment extends DialogFragment {
                 colorView = (ColorView) view.findViewById(R.id.color);
             }
         }
-    }
-
-    public interface OnAllConflictsResolvedListener {
-        void onAllConflictsResolved();
     }
 }

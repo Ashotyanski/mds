@@ -46,6 +46,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_COMPLETE_ACTION;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_CONFLICT_NOTES;
 import static yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService.SYNC_ILLEGAL_FORMAT;
+import static yandex.com.mds.hw.notes.synchronizer.conflicts.SyncConflictFragment.CONFLICTS_RESOLVED_ACTION;
 
 public class NotesFragment extends Fragment {
     private static final String TAG = NotesFragment.class.getName();
@@ -58,8 +59,7 @@ public class NotesFragment extends Fragment {
     private NoteLoader noteLoader;
 
     private NoteDao noteDao = new NoteDaoImpl();
-    private BroadcastReceiver syncCompleteReceiver;
-    private BroadcastReceiver importReceiver;
+    private BroadcastReceiver syncCompleteReceiver, importReceiver, conflictsResolvedReceiver;
     private View view;
 
     public NotesFragment() {
@@ -139,6 +139,19 @@ public class NotesFragment extends Fragment {
                 loadNotes();
             }
         };
+        conflictsResolvedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                loadNotes();
+            }
+        };
+        importReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                loadNotes();
+            }
+        };
+
         FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,14 +176,6 @@ public class NotesFragment extends Fragment {
             }
         });
         list.setAdapter(adapter);
-
-        importReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                loadNotes();
-            }
-        };
-
         return view;
     }
 
@@ -179,6 +184,7 @@ public class NotesFragment extends Fragment {
         super.onResume();
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(syncCompleteReceiver, new IntentFilter(SYNC_COMPLETE_ACTION));
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(importReceiver, NoteImporterExporter.importIntentFilter);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(conflictsResolvedReceiver, new IntentFilter(CONFLICTS_RESOLVED_ACTION));
     }
 
     @Override
@@ -186,6 +192,7 @@ public class NotesFragment extends Fragment {
         super.onPause();
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(syncCompleteReceiver);
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(importReceiver);
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(conflictsResolvedReceiver);
     }
 
     private void loadNotes() {

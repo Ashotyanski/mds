@@ -26,13 +26,14 @@ import android.widget.Toast;
 import yandex.com.mds.hw.navigation.MainDrawerLayout;
 import yandex.com.mds.hw.navigation.NavigationManager;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService;
-import yandex.com.mds.hw.notes.synchronizer.conflicts.SyncConflictFragment;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.DiskUnsynchronizedNotesManager;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNotesManager;
 import yandex.com.mds.hw.utils.NetworkUtils;
 
 import static yandex.com.mds.hw.notes.NotesFragment.getCurrentUserId;
 import static yandex.com.mds.hw.notes.NotesFragment.setCurrentUserId;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SyncConflictFragment.OnAllConflictsResolvedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = MainActivity.class.getName();
 
     private MainDrawerLayout drawer;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView userIdView;
 
     private NavigationManager navigationManager;
+    private UnsynchronizedNotesManager unsynchronizedNotesManager;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
     private NavigationView navigationView;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         navigationManager = new NavigationManager(getSupportFragmentManager());
+        unsynchronizedNotesManager = new DiskUnsynchronizedNotesManager();
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return true;
             }
             case R.id.action_delete_sync_cache: {
-//                synchronizer.clearCache();
+                unsynchronizedNotesManager.clear();
                 if (!isDrawerLocked) drawer.closeDrawers();
                 return true;
             }
@@ -189,11 +192,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public NavigationManager getNavigationManager() {
         return navigationManager;
-    }
-
-    @Override
-    public void onAllConflictsResolved() {
-//        loadColors();
     }
 
     public static class NetworkBroadcastReceiver extends BroadcastReceiver {

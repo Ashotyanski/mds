@@ -85,7 +85,7 @@ public class NavigationManager {
     }
 
     public void navigateBack(Activity baseActivity) {
-        if (mFragmentManager.getBackStackEntryCount() == 0) {
+        if (mFragmentManager.getBackStackEntryCount() <= 1) {
             baseActivity.finish();
         } else {
             View view = baseActivity.getCurrentFocus();
