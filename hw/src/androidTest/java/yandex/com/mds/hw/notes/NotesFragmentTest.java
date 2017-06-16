@@ -49,7 +49,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.AllOf.allOf;
 import static yandex.com.mds.hw.TestUtils.doWithView;
-import static yandex.com.mds.hw.TestUtils.waitFor;
 import static yandex.com.mds.hw.colorpicker.ColorPickerDialogTest.nthChildOf;
 import static yandex.com.mds.hw.colorpicker.ColorPickerDialogTest.withColor;
 import static yandex.com.mds.hw.notes.NotesFragment.PREFERENCES_USER;
@@ -139,7 +138,8 @@ public class NotesFragmentTest {
 
     @Test
     public void testQueryToggleButton() throws Exception {
-        onView(withId(R.id.action_filter)).perform(click()).perform(waitFor(500));
+        onView(withId(R.id.action_filter)).perform(click());
+        Thread.sleep(600);
         View v = mActivityRule.getActivity().findViewById(R.id.query);
         assertEquals(View.VISIBLE, v.getVisibility());
         assertEquals(1.0f, v.getAlpha());

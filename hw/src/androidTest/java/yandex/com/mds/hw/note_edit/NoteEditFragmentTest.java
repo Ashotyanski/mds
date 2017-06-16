@@ -90,8 +90,8 @@ public class NoteEditFragmentTest {
         onView(withId(R.id.description)).perform(typeText(("Description")));
         //set color
         onView(withId(R.id.color))
-                .perform(click())
-                .perform(waitFor(400));
+                .perform(click());
+        mSolo.waitForDialogToOpen();
         onView(nthChildOf(allOf(
                 isAssignableFrom(LinearLayout.class),
                 isDescendantOfA(withId(R.id.color_picker_view))), 0))
