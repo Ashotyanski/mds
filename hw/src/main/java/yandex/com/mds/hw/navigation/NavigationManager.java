@@ -14,9 +14,9 @@ import java.util.ArrayList;
 
 import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.models.Note;
-import yandex.com.mds.hw.note_edit.NoteEditFragment;
-import yandex.com.mds.hw.note_edit.NotePagerFragment;
-import yandex.com.mds.hw.note_import_export.NoteImportExportFragment;
+import yandex.com.mds.hw.noteedit.NoteEditFragment;
+import yandex.com.mds.hw.noteedit.NotePagerFragment;
+import yandex.com.mds.hw.noteimportexport.NoteImportExportFragment;
 import yandex.com.mds.hw.notes.NotesFragment;
 
 public class NavigationManager {

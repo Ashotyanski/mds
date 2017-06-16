@@ -36,7 +36,7 @@ import yandex.com.mds.hw.R;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.db.NoteDaoImpl;
 import yandex.com.mds.hw.models.Note;
-import yandex.com.mds.hw.note_import_export.NoteImporterExporter;
+import yandex.com.mds.hw.noteimportexport.NoteImporterExporter;
 import yandex.com.mds.hw.notes.query.Query;
 import yandex.com.mds.hw.notes.query.presenters.QueryPresenter;
 import yandex.com.mds.hw.notes.synchronizer.conflicts.ConflictNotes;

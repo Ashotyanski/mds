@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.note_import_export;
+package yandex.com.mds.hw.noteimportexport;
 
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;

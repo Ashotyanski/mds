@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.note_edit;
+package yandex.com.mds.hw.noteedit;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -27,9 +27,9 @@ import yandex.com.mds.hw.colorpicker.colorview.EditableColorView;
 import yandex.com.mds.hw.db.NoteDao;
 import yandex.com.mds.hw.db.NoteDaoImpl;
 import yandex.com.mds.hw.models.Note;
-import yandex.com.mds.hw.note_edit.tasks.AddTask;
-import yandex.com.mds.hw.note_edit.tasks.DeleteTask;
-import yandex.com.mds.hw.note_edit.tasks.SaveTask;
+import yandex.com.mds.hw.noteedit.tasks.AddTask;
+import yandex.com.mds.hw.noteedit.tasks.DeleteTask;
+import yandex.com.mds.hw.noteedit.tasks.SaveTask;
 import yandex.com.mds.hw.utils.TimeUtils;
 
 public class NoteEditFragment extends Fragment {

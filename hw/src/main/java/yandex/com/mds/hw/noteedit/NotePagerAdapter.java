@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.note_edit;
+package yandex.com.mds.hw.noteedit;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

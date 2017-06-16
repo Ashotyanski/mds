@@ -1,4 +1,4 @@
-package yandex.com.mds.hw.note_import_export;
+package yandex.com.mds.hw.noteimportexport;
 
 import android.app.Notification;
 import android.app.ProgressDialog;

@@ -46,7 +46,7 @@
         android:layout_below="@+id/color"
         android:background="@drawable/shadow" />
 
-    <yandex.com.mds.hw.note_edit.UrlImageView
+    <yandex.com.mds.hw.noteedit.UrlImageView
         android:id="@+id/url_image"
         android:layout_width="@dimen/edit_color_width"
         android:layout_height="@dimen/edit_color_height"
