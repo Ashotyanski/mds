@@ -19,8 +19,6 @@
     <!--Note activity dimensions-->
     <dimen name="edit_color_width">80dp</dimen>
     <dimen name="edit_color_height">80dp</dimen>
-    <dimen name="edit_color_margin">16dp</dimen>
-    <dimen name="save_button_marginTop">20dp</dimen>
     <dimen name="url_image_margin_top">16dp</dimen>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>

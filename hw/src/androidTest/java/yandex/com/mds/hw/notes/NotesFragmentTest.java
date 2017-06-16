@@ -30,6 +30,8 @@ import yandex.com.mds.hw.models.Note;
 import yandex.com.mds.hw.network.NoteServiceResponse;
 import yandex.com.mds.hw.notes.synchronizer.NoteSynchronizationService;
 import yandex.com.mds.hw.notes.synchronizer.conflicts.Utils;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.DiskUnsynchronizedNotesManager;
+import yandex.com.mds.hw.notes.synchronizer.unsynchonizednotes.UnsynchronizedNotesManager;
 import yandex.com.mds.hw.utils.SerializationUtils;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -61,11 +63,13 @@ public class NotesFragmentTest {
     private Note note, unmodifiedNote, emptyNote;
     private Date now, later;
     private NoteDao noteDao;
+    private UnsynchronizedNotesManager unsynchronizedNotesManager;
     private int userId;
     private Solo mSolo;
 
     @Before
     public void setUp() throws Exception {
+        unsynchronizedNotesManager = new DiskUnsynchronizedNotesManager();
         noteDao = new NoteDaoImpl();
         mSolo = new Solo(InstrumentationRegistry.getInstrumentation(), mActivityRule.getActivity());
         now = new Date();
@@ -144,15 +148,13 @@ public class NotesFragmentTest {
 
     @Test
     public void testSynchronizationConflict() throws Exception {
+        unsynchronizedNotesManager.clear();
         noteDao.deleteNotes();
         note.setId((int) noteDao.addNote(note));
         MockWebServer webServer = new MockWebServer();
         webServer.start();
         webServer.enqueue(new MockResponse().setBody(SerializationUtils.GSON.toJson(
                 new NoteServiceResponse<>("ok", new Note[]{}))));
-//        onView(withId(R.id.drawer_layout)).perform(open());
-//        onView(withText(R.string.synchronize)).perform(click());
-//        mSolo.waitForText(mActivityRule.getActivity().getString(R.string.sync_started_message), 1, 300);
         NoteSynchronizationService.startNoteSynchronizer(mActivityRule.getActivity(), userId,
                 webServer.url("/").toString());
         mSolo.waitForText(mActivityRule.getActivity().getString(R.string.sync_conflict_action_resolve));

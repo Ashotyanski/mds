@@ -70,6 +70,7 @@ public class NoteDaoImplTest {
         assertEquals(emptyNote.getDescription(), c.getString(c.getColumnIndex(DESCRIPTION)));
         assertEquals(emptyNote.getColor(), c.getInt(c.getColumnIndex(COLOR)));
         assertEquals(emptyNote.getImageUrl(), c.getString(c.getColumnIndex(IMAGE_URL)));
+        c.close();
         helper.clean();
 
         id = noteDao.addNote(note);
@@ -91,6 +92,7 @@ public class NoteDaoImplTest {
 
         long newId = noteDao.addNote(note);
         assertNotSame(id, newId);
+        c.close();
     }
 
     @Test
@@ -100,6 +102,7 @@ public class NoteDaoImplTest {
         Cursor c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
         c.moveToFirst();
         assertEquals(0, c.getCount());
+        c.close();
 
         notes.add(emptyNote);
         notes.add(note);
@@ -128,6 +131,7 @@ public class NoteDaoImplTest {
                 c.getLong(c.getColumnIndex(LAST_MODIFICATION_DATE)));
         assertEquals(trimMilliseconds(note.getLastViewDate()).getTime(),
                 c.getLong(c.getColumnIndex(LAST_VIEW_DATE)));
+        c.close();
     }
 
     @Test
@@ -139,6 +143,7 @@ public class NoteDaoImplTest {
         Cursor c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
         c.moveToFirst();
         assertEquals(3, c.getCount());
+        c.close();
 
         noteDao.deleteNote((int) noteId);
         c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
@@ -147,17 +152,20 @@ public class NoteDaoImplTest {
         assertEquals(emptyNoteId, c.getInt(c.getColumnIndex(_ID)));
         c.moveToNext();
         assertEquals(unmodifiedNoteId, c.getInt(c.getColumnIndex(_ID)));
+        c.close();
 
         noteDao.deleteNote((int) unmodifiedNoteId);
         c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
         c.moveToFirst();
         assertEquals(1, c.getCount());
         assertEquals(emptyNoteId, c.getInt(c.getColumnIndex(_ID)));
+        c.close();
 
         noteDao.deleteNote((int) emptyNoteId);
         c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
         c.moveToFirst();
         assertEquals(0, c.getCount());
+        c.close();
 
         assertFalse(noteDao.deleteNote((int) emptyNoteId));
     }
@@ -171,11 +179,13 @@ public class NoteDaoImplTest {
         Cursor c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
         c.moveToFirst();
         assertEquals(3, c.getCount());
+        c.close();
 
         noteDao.deleteNotes();
         c = db.query(TABLE_NAME, NoteDatabaseHelper.ALL_COLUMNS, null, null, null, null, null);
         c.moveToFirst();
         assertEquals(0, c.getCount());
+        c.close();
     }
 
     @Test
